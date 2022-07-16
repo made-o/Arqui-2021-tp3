@@ -103,8 +103,8 @@ module execute #(
    // Multiplexor for ALUSrc:
    always @(dato2_preALU or i_datoLeido2 or i_aluSrc) begin
       case(i_aluSrc)
-         2'b00: dato2ALU <= dato2_preALU;
-         2'b01: dato2ALU <= i_datoExtSigno;
+         2'b0: dato2ALU <= dato2_preALU;
+         2'b1: dato2ALU <= i_datoExtSigno;
       endcase
    end//end_always
    
