@@ -112,7 +112,7 @@ module execute #(
    assign o_rd_data  = i_rd_id;
    assign o_rt_OR_rd = i_rt_OR_rd;
    
-   //--------------------------------------------
+   //---------------------------------------------------
    always@(posedge i_clk) begin: lectura// FIJARSE - si faltan variables para setear en cero
       if(i_reset) begin
          memToReg <= 1'b0;
@@ -132,7 +132,7 @@ module execute #(
       end//end_else
    end//end_always
    
-   //--------------------------------------------
+
    always@(negedge i_clk) begin: escritura
       if(i_reset) begin
          o_memToReg <= 1'b0;

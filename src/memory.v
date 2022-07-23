@@ -48,7 +48,7 @@ module memory #(
    reg [N_BITS-1:0] aluResult;
    reg [N_BITS_REG-1:0] rd_MEM;
    
-    ////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////
    // Start-code:
    
    // Branch Logic:
@@ -64,7 +64,7 @@ module memory #(
    assign o_rt_OR_rd = i_rt_OR_rd;
    assign o_rd_MEM   = i_rd_EX_MEM;
    
-   //--------------------------------------------
+   //---------------------------------------------------
    // Lectura y escritura:
    always @(posedge i_clk) begin: lectura
       if(i_reset) begin

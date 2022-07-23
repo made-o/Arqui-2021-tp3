@@ -1,51 +1,54 @@
 module dataMemory #(
    // Parameters:
    parameter RAM_WIDTH = 32, // ancho de datos de la mem RAM
-   parameter RAM_DEPTH = 1024 // profundidad de la RAM (cant.de entradas)
+   parameter RAM_DEPTH = 128 // profundidad de la RAM (cant.de entradas)
 )
 (  // Inputs & Outputs:
-   input  wire [RAM_WIDTH-1:0] i_address, // address bus
-   input  wire [RAM_WIDTH-1:0] i_write_data, // datos de entrada a la RAM
-   input  wire i_valid,
-   input  wire i_clk,  // clock
-   input  wire i_read_enable,
-   input  wire i_write_enable,
+   input  i_valid,
+   input  i_clk,  // clock
+   input  i_read_enable, //memRead
+   input  i_write_enable, //memWrite
    
-   output wire [RAM_WIDTH-1:0] o_read_data // datos de salida de la RAM
+   input  [RAM_WIDTH-1:0] i_address, // address bus
+   input  [RAM_WIDTH-1:0] i_write_data, // datos de entrada a la RAM
+   
+   
+   output reg [RAM_WIDTH-1:0] o_read_data // datos de salida de la RAM
 );
-
-   // Internal Variables:
-   wire enable = 1'b1; // sirve para deshabilitar el puerto cuando o está en uso
-   wire reset  = 1'b0; // output reset
-   wire reg_enable = 1'b0;
    
-   reg [RAM_WIDTH-1:0] d_ram [RAM_DEPTH-1:0];
-   reg [RAM_WIDTH-1:0] ram_data = {RAM_WIDTH{1'b0}};
+   // Variables internas:
+   reg [RAM_WIDTH-1:0] memoryArray [RAM_DEPTH-1:0];
    
    
-   // Carga de datos en la memoria:
-   generate
-      reg [RAM_WIDTH-1:0] ram_index;
-      initial begin
-         for(ram_index = 0;ram_index < RAM_DEPTH;ram_index = ram_index + 1) begin
-             d_ram[ram_index] = 3;
-         end // end_for
-      end
-   endgenerate
-   
-   // LECTURA:
-   always @(*) begin: lectura
-      if(i_valid && i_read_enable)
-         ram_data <= d_ram[i_address];
+   ////////////////////////////////////////////////////
+   // Start-code:
+   // Initialization:
+   initial begin
+      memoryArray[0]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0000; // Data 0
+      memoryArray[1]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0001;
+      memoryArray[2]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0010;
+      memoryArray[3]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0011;
+      memoryArray[4]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0100;
+      memoryArray[5]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0101;
+      memoryArray[6]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0110;
+      memoryArray[7]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0111;
+      memoryArray[8]  <= 32'b0000_0000_0000_0000_0000_0000_0000_1000;
+      memoryArray[9]  <= 32'b0000_0000_0000_0000_0000_0000_0000_1001;
+      memoryArray[10] <= 32'b0000_0000_0000_0000_0000_0000_0000_1010;
    end
    
-   // ESCRITURA:
+   //---------------------------------------------------
+   // LECTURA: (get data from the specified address)
+   always @(posedge i_clk) begin: lectura
+      if(i_valid && i_read_enable)
+        o_read_data <= memoryArray[i_address];
+   end
+   
+   // ESCRITURA: (write data to the specified address)
    always @(negedge i_clk) begin: escritura
       if(i_valid && i_write_enable)
-         d_ram[i_address] <= i_write_data;
+         o_read_data <= memoryArray[i_address];
    end
    
-   
-   assign o_read_data = ram_data;
    
 endmodule
