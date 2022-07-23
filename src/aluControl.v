@@ -7,7 +7,7 @@ module aluControl#(
 )
    // Inputs & Outputs:
 (  input  [N_BITS-1:0]  i_funct, // instrucción[5-0] - 6bits
-   input  [N_BITS-1:0]  i_op,  // instrucción[31-26] - 6bits
+   input  [N_BITS-1:0]  i_op,    // instrucción[31-26] - 6bits
    input  [N_ALUOP-1:0] i_aluOp, // señal de control - 2bits
    
    output reg [N_BITS-1:0] o_opcodeAlu
