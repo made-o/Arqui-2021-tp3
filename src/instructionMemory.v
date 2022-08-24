@@ -2,55 +2,53 @@
 
 module instructionMemory #(
     // Parameters:
-    parameter DATA_WIDTH = 32,   // Specify RAM data width
-    parameter ADDR_WIDTH = 4,    // Specify Address width
-    parameter RAM_DEPTH  = 1 << ADDR_WIDTH  // 2^4 = 16
+    parameter DATA_WIDTH = 32, // Specify RAM data width
+    parameter DATA_DEPTH  = 128,
+    parameter FILE_DATA = "D:/FACULTAD/VivadoFiles/memInitFile.mem"
 )
     //Input and outputs:
-(   input  wire [ADDR_WIDTH-1:0] i_address, // Address bus
-    input  i_clk,        // Clock
-    input  i_w_Enable,   // Write Enable
-    input  i_r_Enable,   // Read Enable
-    input  i_oEnable,    // Output Enable
+(   input  i_clk, // Clock
+    input  i_valid,
+    input  [DATA_WIDTH-1:0] i_address, // Address bus
     
-    inout wire [DATA_WIDTH-1:0] io_data // RAM input/output data
-
+    output wire [DATA_WIDTH-1:0] o_data, // RAM output data
+    output reg  o_haltSignal
 );
     // Internal Variables:
-    // Variable to hold the registered read address:
-    reg [DATA_WIDTH-1:0] data_out;
-    // Declare the RAM variable:
-    reg [DATA_WIDTH-1:0] memBlock [0:RAM_DEPTH-1];
-    reg oe_r; // Output Enable Read
-    
+    wire enable = 1;
+    //wire reset = 0;
+    //reg loadDone = 1'b0;
+    reg [DATA_WIDTH-1:0] memBlock [DATA_DEPTH-1:0];
+    reg [DATA_WIDTH-1:0] ram_data = {DATA_WIDTH{1'b0}};
+        
     ////////////////////////////////////////////////////
-    
-    // Tri-State Buffer control:
-    // output: When i_w_Enable = 0, i_oEnable = 1
-    // if(condition) --> io_data = data_out; else io_data = io_data{DATA_WIDTH{1'bz}};
-    assign io_data = (i_oEnable && !i_w_Enable) ? data_out : {DATA_WIDTH{1'bz}};
-    
-    
-    // Memory Write Block:
-    // Write Operation: When i_w_Enable = 1 and i_r_Enable = 0
-    always @(posedge i_clk) begin: memWrite
-       if(i_w_Enable && !i_r_Enable) begin
-          memBlock[i_address] <= io_data;
-       end//end_if
-    end//end_always
-    
-    
-    // Memory Read Block:
-    // Read Operation: When i_w_Enable = 0, i_r_Enable = 1 and i_oEnable = 1
-    always @(posedge i_clk) begin: memRead
-       if(!i_w_Enable && i_r_Enable && i_oEnable) begin
-          data_out <= memBlock[i_address];
-          oe_r <= 1;
-       end//end_if
+    // Start-code:
+    // Initialize memory:
+    always @(*) begin: loadFile
+       if(i_valid) begin
+          if(FILE_DATA != "") begin
+              $readmemb(FILE_DATA, memBlock, 0, DATA_DEPTH-1);
+              //loadDone = 1'b1;
+          end
+       end
+    end
+   
+    // Assign the contents at the requested memory address to data:
+    always @(posedge i_clk) begin
+       if(enable && i_valid) begin
+          ram_data <= memBlock[i_address];
+       end
+    end
+  
+    always @(negedge i_clk) begin
+       if(o_data[31:26] == 6'b111111) begin //Check if instruction is HALT
+          o_haltSignal = 1'b1;
+       end
        else begin
-          oe_r <= 0;
-       end//end_Else
-    end//end_always
+          o_haltSignal = 1'b0;
+       end
+    end
     
-
+    assign o_data = ram_data;
+    
 endmodule
