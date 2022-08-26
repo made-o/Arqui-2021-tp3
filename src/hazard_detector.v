@@ -9,45 +9,83 @@ module hazard_detector#
     input  wire                  i_PCSrc_ID,
     input  wire                  i_PCSrc_EX,
     input  wire                  i_control_M_memRead_ID_EX,
-    input  wire [N_BITS_REG-1:0] i_ID_EX_rt,
-    input  wire [N_BITS_REG-1:0] i_EX_M_rt,
     input  wire [N_BITS_REG-1:0] i_ID_EX_memRead,
+    
+    input  wire [1:0]            i_branch,
+    
     input  wire [N_BITS_REG-1:0] i_rs,
+    
+    input  wire [N_BITS_REG-1:0] i_Alu_rt,
+    input  wire [N_BITS_REG-1:0] i_Mem_rt,
+    input  wire                  i_wReg_ex,
+    input  wire                  i_wReg_mem,
+    input  wire [N_BITS_REG-1:0] i_ID_EX_rt,
     input  wire [N_BITS_REG-1:0] i_rt,
-    input  wire [N_BITS-1:0] i_jump_direction_ID,
-    input  wire [N_BITS-1:0] i_jump_direction_EX,
+    
+    input  wire [N_BITS-1:0] i_jump_direction,
+    input  wire [N_BITS-1:0] i_PC,
+    input  wire [N_BITS-1:0] i_dato_leido_1,
+    input  wire [N_BITS-1:0] i_dato_leido_2,
+    input  wire [N_BITS-1:0] i_dato_salida_ALU,
+    input  wire [N_BITS-1:0] i_dato_salida_mem,
     
     output reg                   o_PCSrc,
     output reg                   o_flush,
     output reg                   o_halt,
     output reg [N_BITS-1:0]      o_jump_direction
  );
- 
+    reg  [N_BITS-1:0] dato_comparacion_1;
+    reg  [N_BITS-1:0] dato_comparacion_2;
+    
     always@(*)begin:data_hazard
         if(i_control_M_memRead_ID_EX && ((i_rs == i_ID_EX_rt) || (i_rt == i_ID_EX_rt)))
             o_halt = 1'b1;
         else
             o_halt = 1'b0;
     end
-     
-    always@(*)begin:control_hazard
-        if(i_PCSrc_ID && (i_rt != i_ID_EX_rt && i_rs != i_ID_EX_rt && i_rt != i_EX_M_rt && i_rs != i_EX_M_rt ))
-            begin
-                o_flush = 1'b1;
-                o_jump_direction = i_jump_direction_ID;
-                o_PCSrc = i_PCSrc_ID;
-            end
-        else if(i_PCSrc_EX)
-            begin
-                o_flush = 1'b1;
-                o_jump_direction = i_jump_direction_EX;
-                o_PCSrc = i_PCSrc_EX;
-            end
+    
+    always@(*)begin:mux_data1
+        if(i_rs == i_Alu_rt && i_wReg_ex == 1)
+            dato_comparacion_1 = i_dato_salida_ALU;
         else
+            dato_comparacion_1 = i_dato_leido_1;
+    end
+    
+    always@(*)begin:mux_data2
+        if(i_rs == i_Mem_rt && i_wReg_mem == 1)
+            dato_comparacion_2 = i_dato_salida_mem;
+        else
+            dato_comparacion_2 = i_dato_leido_2;
+    end
+    
+    always@(*)begin:control_hazard
+        if(i_branch == 2'b01)
+        begin
+            if(dato_comparacion_1 == dato_comparacion_2)
             begin
-                o_flush = 1'b0;
-                o_PCSrc = 0;
+                o_halt  = 1;
+                o_flush = 1;
+                o_jump_direction = i_jump_direction;
             end
+            else
+            begin
+                o_halt  = 0;
+                o_flush = 0;
+                o_jump_direction = i_PC;
+            end
+        end
+        else if(i_branch == 2'b10)
+        begin
+            o_halt  = 1;
+            o_flush = 1;
+            o_jump_direction = i_jump_direction;
+        end
+        else
+        begin
+            o_halt  = 0;
+            o_flush = 0;
+            o_jump_direction = i_PC;
+        end
     end
  
 endmodule

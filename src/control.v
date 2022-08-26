@@ -19,7 +19,7 @@ module control#
 	output reg  	 o_control_EX_regDst,	
 	
 	//MEM - se?ales de control para acceso a memoria
-	output reg 	 	 o_control_M_branch,
+	output reg [1:0] o_control_M_branch,
 	output reg 	 	 o_control_M_memRead,
 	output reg 	 	 o_control_M_memWrite,
 	
@@ -35,7 +35,7 @@ module control#
 		if(i_reset || i_halt)
 		begin
 			o_control_EX_regDst 	 = 1'b0;
-			o_control_M_branch 	     = 1'b0;
+			o_control_M_branch 	     = 1'b00;
 			o_control_M_memRead 	 = 1'b0;
 			o_control_WB_memtoReg    = 1'b0;
 			o_control_EX_ALUOp 	     = 2'b0;
@@ -52,7 +52,7 @@ module control#
 			6'b000000:
             begin
                 o_control_EX_regDst 	 = 1'b1;
-                o_control_M_branch 	     = 1'b0;
+                o_control_M_branch 	     = 1'b00;
                 o_control_M_memRead 	 = 1'b0;
                 o_control_WB_memtoReg    = 1'b0;
                 o_control_EX_ALUOp 	     = 1'b0;
@@ -65,7 +65,7 @@ module control#
 			6'b001xxx://addi
 			begin
 				o_control_EX_regDst 	 = 1'b0;
-				o_control_M_branch 	 = 1'b0;
+				o_control_M_branch 	 = 1'b00;
 				o_control_M_memRead 	 = 1'b0;
 				o_control_WB_memtoReg = 1'b0;
 				o_control_EX_ALUOp 	 = 2'b10;
@@ -78,7 +78,7 @@ module control#
 			6'b0001xx:
 			begin
 				o_control_EX_regDst 	 = 1'b0;
-				o_control_M_branch 	 = 1'b1;
+				o_control_M_branch 	 = 1'b01;
 				o_control_M_memRead 	 = 1'b0;
 				o_control_WB_memtoReg = 1'b0;
 				o_control_EX_ALUOp 	 = 2'b01;
@@ -90,21 +90,21 @@ module control#
 			//tipo J
 			6'b00001x:
 			begin
-				o_control_EX_regDst 	 = 1'b1;
-				o_control_M_branch 	 = 1'b0;
+				o_control_EX_regDst 	 = 1'b0;
+				o_control_M_branch 	 = 1'b10;
 				o_control_M_memRead 	 = 1'b0;
 				o_control_WB_memtoReg = 1'b0;
 				o_control_EX_ALUOp 	 = 1'b0;
 				o_control_M_memWrite  = 1'b0;
 				o_control_EX_ALUSrc 	 = 1'b0;
-				o_control_WB_regWrite  = 1'b1;
+				o_control_WB_regWrite  = 1'b0;
 			end
 	
 			//tipo sw
 			6'b101xxx:
 			begin
 				o_control_EX_regDst 	 = 1'b0;
-				o_control_M_branch 	 = 1'b0;
+				o_control_M_branch 	 = 1'b00;
 				o_control_M_memRead 	 = 1'b0;
 				o_control_WB_memtoReg = 1'b0;
 				o_control_EX_ALUOp 	 = 2'b10;
@@ -117,7 +117,7 @@ module control#
 			6'b100xxx:
 			begin 
 				o_control_EX_regDst	 = 1'b0;
-				o_control_M_branch	 = 1'b0;
+				o_control_M_branch 	 = 1'b00;
 				o_control_M_memRead	 = 1'b1;
 				o_control_WB_memtoReg = 1'b1;
 				o_control_EX_ALUOp	 = 2'b0;
@@ -129,7 +129,7 @@ module control#
 			default: //halt o no valida
 			begin
 			    o_control_EX_regDst	 = 1'b0;
-				o_control_M_branch	 = 1'b0;
+				o_control_M_branch 	 = 1'b00;
 				o_control_M_memRead	 = 1'b0;
 				o_control_WB_memtoReg = 1'b0;
 				o_control_EX_ALUOp	 = 2'b0;
