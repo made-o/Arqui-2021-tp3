@@ -5,7 +5,7 @@ module regMemory #(
     parameter DATA_WIDTH = 32,   // Specify RAM data width
     parameter ADDR_WIDTH = 5,    // Specify Address width
     parameter RAM_DEPTH  = 1 << ADDR_WIDTH,  // 2^5 = 32
-    parameter P_REG_WIDTH  = 6 
+    parameter P_REG_WIDTH  = 5 
 )
     //Input and outputs:
 (  
@@ -33,6 +33,7 @@ module regMemory #(
     reg [DATA_WIDTH-1:0] memBlock [0:RAM_DEPTH-1];
     reg oe_r;
     
+    integer index;
     ////////////////////////////////////////////////////
         
     // Tri-State Buffer control:
@@ -40,10 +41,16 @@ module regMemory #(
     assign o_data1 = (i_oEnable && !i_ReadEnable) ? data1_out: {DATA_WIDTH{1'bz}};
     assign o_data2 = (i_oEnable && !i_ReadEnable) ? data2_out: {DATA_WIDTH{1'bz}};
     
-    always@ *
+    always@*
     begin
         if(i_reset)
-        memBlock[0] = {DATA_WIDTH{1'b0}};
+        begin
+            memBlock[0] = {DATA_WIDTH{1'b0}};
+            for(index = 0;index < RAM_DEPTH; index = index+1)
+            begin
+                memBlock[index] = {32{1'b0}}; 
+            end
+        end
     end
     // Memory Write Block:
     // Write Operation: When i_w_Enable = 1 and i_r_Enable = 0
