@@ -19,7 +19,6 @@ module dataMemory #(
    // Variables internas:
    reg [RAM_WIDTH-1:0] memoryArray [RAM_DEPTH-1:0];
    
-   
    ////////////////////////////////////////////////////
    // Start-code:
    // Initialization:
