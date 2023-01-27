@@ -19,7 +19,7 @@ module p_counter #(
          o_newPC = {NBITS{1'b0}};
       else if(i_enable && !i_halt && !i_stall)
          o_newPC = i_PC;
-      else if(i_PC != {NBITS{1'b0}) // en el caso inprobable que se genere un halt 
+      else if(i_PC != {NBITS{1'b0}}) // en el caso inprobable que se genere un halt 
          o_newPC = i_PC - 1;        // en la instruccion -1 => no se porduciria un UnderFlow
       else                          // entonces se ejecuta la instruccion 0
          o_newPC = {NBITS{1'b0}};
