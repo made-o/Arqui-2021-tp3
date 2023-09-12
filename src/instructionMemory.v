@@ -4,7 +4,7 @@ module instructionMemory #(
     // Parameters:
     parameter DATA_WIDTH = 32, // Specify RAM data width
     parameter DATA_DEPTH  = 128,
-    parameter FILE_DATA = "D:/FACULTAD/VivadoFiles/memInitFile.mem"
+    parameter FILE_DATA = "D:/FACULTAD/VivadoFiles/memIF.mem"
 )
     //Input and outputs:
 (   input  i_clk, // Clock
@@ -35,7 +35,7 @@ module instructionMemory #(
    
     // Assign the contents at the requested memory address to data:
     always @(posedge i_clk) begin
-       if(enable && i_valid) begin
+       if(enable && !i_valid) begin
           ram_data <= memBlock[i_address];
        end
     end
