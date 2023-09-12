@@ -1,12 +1,13 @@
 `timescale 1ns / 1ps
-module instruccionDecode#(
+
+module instructionDecode#(
     // Parametros:
     parameter N_BITS = 32,
     parameter N_REG_BITS = 5
 )
 // Entradas y salidas:
 (   
-    //Señales De Entrada
+    //SeÃ±ales De Entrada
     //de el modulo Deco
     input  wire [N_BITS-1:0]         i_instruccion,
     input  wire [N_BITS-1:0]         i_WB_data_to_w,
@@ -30,7 +31,7 @@ module instruccionDecode#(
     input  wire [N_REG_BITS-1:0] i_Alu_rt,
     input  wire [N_REG_BITS-1:0] i_Mem_rt,
     
-    //Señales de Salida
+    //SeÃ±ales de Salida
     // generales
     output wire [N_BITS-1:0] o_dato_leido1,
     output wire [N_BITS-1:0] o_dato_leido2,
@@ -80,19 +81,32 @@ module instruccionDecode#(
             o_rd_or_rt =i_instruccion[15:11];
     end
     
-    always @(posedge i_clk) begin: memWrite
-        i_WriteEnable = i_regWrite;
-        i_ReadEnable = 0;
-        valid = 1;
+    always @(i_clk) begin
+        if(i_clk)
+        begin: memWrite
+            i_WriteEnable <= i_regWrite;
+            i_ReadEnable <= 0;
+            i_oEnable <= 0;
+            valid <= 1;
+        end
+        else
+        begin: memRead
+            i_WriteEnable <= 0;
+            i_ReadEnable <= 1;
+            i_oEnable <= 1;
+            valid <= 0;
+        end
     end//end_always
     
+    /*
     always @(negedge i_clk) begin: memRead
         i_WriteEnable = 0;
         i_ReadEnable = 1;
         i_oEnable = 1;
         valid = 0;
     end//end_always
-
+    */
+    
     regMemory 
         u_reg_mem (
             .i_clk(i_clk),
@@ -171,4 +185,3 @@ module instruccionDecode#(
     );
     
 endmodule
-
