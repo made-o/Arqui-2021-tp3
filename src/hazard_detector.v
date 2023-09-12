@@ -37,21 +37,25 @@ module hazard_detector#
     reg  [N_BITS-1:0] dato_comparacion_1;
     reg  [N_BITS-1:0] dato_comparacion_2;
     
-    always@(*)begin:data_hazard
-        if(i_control_M_memRead_ID_EX && ((i_rs == i_ID_EX_rt) || (i_rt == i_ID_EX_rt)))
-            o_halt = 1'b1;
+    always@(*)
+    begin:data_hazard
+    
+        if((i_control_M_memRead_ID_EX == 1'b1) && ((i_rs == i_ID_EX_rt) || (i_rt == i_ID_EX_rt)))
+            o_halt = 1;
         else
-            o_halt = 1'b0;
+            o_halt = 0;
     end
     
-    always@(*)begin:mux_data1
+    always@(*)
+    begin:mux_data1
         if(i_rs == i_Alu_rt && i_control_WB_regWrite_ex == 1)
             dato_comparacion_1 = i_dato_salida_ALU;
         else
             dato_comparacion_1 = i_dato_leido_1;
     end
     
-    always@(*)begin:mux_data2
+    always@(*)
+    begin:mux_data2
         if(i_rs == i_Mem_rt && i_control_WB_regWrite_mem == 1)
             dato_comparacion_2 = i_dato_salida_mem;
         else
@@ -63,26 +67,26 @@ module hazard_detector#
         begin
             if(dato_comparacion_1 == dato_comparacion_2)
             begin
-                o_halt  = 1;
+                //o_halt  = 1;
                 o_flush = 1;
                 o_jump_direction = i_jump_direction;
             end
             else
             begin
-                o_halt  = 0;
+                //o_halt  = 0;
                 o_flush = 0;
                 o_jump_direction = i_PC;
             end
         end
         else if(i_branch == 2'b10)
         begin
-            o_halt  = 1;
+            //o_halt  = 1;
             o_flush = 1;
             o_jump_direction = i_jump_direction;
         end
         else
         begin
-            o_halt  = 0;
+            //o_halt  = 0;
             o_flush = 0;
             o_jump_direction = i_PC;
         end
