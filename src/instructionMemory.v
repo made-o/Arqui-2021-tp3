@@ -3,13 +3,15 @@
 module instructionMemory #(
     // Parameters:
     parameter DATA_WIDTH = 32, // Specify RAM data width
-    parameter DATA_DEPTH  = 128,
-    parameter FILE_DATA = "D:/FACULTAD/VivadoFiles/memIF.mem"
+    parameter DATA_DEPTH  = 128
+    //parameter FILE_DATA = "D:/FACULTAD/VivadoFiles/memIF.mem"
 )
     //Input and outputs:
 (   input  i_clk, // Clock
-    input  i_valid,
+    input  i_pcWrite,
+    input  [DATA_WIDTH-1:0] i_pc, // Address bus
     input  [DATA_WIDTH-1:0] i_address, // Address bus
+    input  [DATA_WIDTH-1:0] i_instruction, // Address bus
     
     output wire [DATA_WIDTH-1:0] o_data, // RAM output data
     output reg  o_haltSignal
@@ -25,18 +27,19 @@ module instructionMemory #(
     // Start-code:
     // Initialize memory:
     always @(*) begin: loadFile
-       if(i_valid) begin
-          if(FILE_DATA != "") begin
-              $readmemb(FILE_DATA, memBlock, 0, DATA_DEPTH-1);
-              //loadDone = 1'b1;
-          end
+       if(i_pcWrite) begin
+          memBlock[i_address] <= i_instruction;
+          //if(FILE_DATA != "") begin
+          //    $readmemb(FILE_DATA, memBlock, 0, DATA_DEPTH-1);
+          //    //loadDone = 1'b1;
+          //end
        end
     end
    
     // Assign the contents at the requested memory address to data:
     always @(posedge i_clk) begin
-       if(enable && !i_valid) begin
-          ram_data <= memBlock[i_address];
+       if(enable && !i_pcWrite) begin
+          ram_data <= memBlock[i_pc];
        end
     end
   
