@@ -7,12 +7,12 @@ module execute #(
 )
    // Inputs & Outputs:
 (  input i_clk, i_reset, i_enable,
-   // Señales de control de la EX:
+   // Seï¿½ales de control de la EX:
    input [1:0] i_aluOP, // 2-bits
    input i_aluSrc,
    input i_regDst,
    
-   // Señales de control de la unidad de Cortorcircuito:
+   // Seï¿½ales de control de la unidad de Cortorcircuito:
    input i_forwardA,
    input i_forwardB,
    
@@ -26,19 +26,19 @@ module execute #(
    input [N_BITS_REG-1:0] i_rd_id, // 6-bits
    input [N_BITS_REG-1:0] i_rt_OR_rd, // 6-bits
    
-   // Señal de entrada al módulo de control de la ALU
+   // Seï¿½al de entrada al mï¿½dulo de control de la ALU
    input [N_BITS_REG:0]   i_opcode, // 6bits
    
-   // Señales extras que entran a la unidad de cortocircuito:
+   // Seï¿½ales extras que entran a la unidad de cortocircuito:
    input [N_BITS_REG-1:0] i_rd_EX_MEM, //6-bits
    input [N_BITS_REG-1:0] i_rd_MEM_WB, //6-bits
    input [N_BITS_REG-1:0] i_rs_id,     //6-bits
    
-   // Señales que vienen de las etapas WB y MEM (para usar en MUX)
+   // Seï¿½ales que vienen de las etapas WB y MEM (para usar en MUX)
    input [N_BITS-1:0] i_wbData,
    input [N_BITS-1:0] i_memData,
    
-   // Señales que vienen de la etapa ID o de etapas siguientes:
+   // Seï¿½ales que vienen de la etapa ID o de etapas siguientes:
    input i_memToReg,
    input i_regWrite_EX_MEM,
    input i_regWrite_MEM_WB,
@@ -47,8 +47,8 @@ module execute #(
    input i_memRead,
    
    
-   output reg  o_ceroSignal,
-   output reg  [N_BITS-1:0] o_aluResult,
+   output wire  o_ceroSignal,
+   output wire  [N_BITS-1:0] o_aluResult,
    output wire [N_BITS-1:0] o_datoLeido2,
    output wire [N_BITS_REG-1:0] o_rd_data, //6-bits
    output wire [N_BITS_REG-1:0] o_rt_OR_rd,
@@ -62,13 +62,13 @@ module execute #(
 );
 
    // Internal Variables:
-   // Señales referidas al bloque ALU:
+   // Seï¿½ales referidas al bloque ALU:
    reg [N_BITS-1:0] dato1ALU; // DatoA que ingresa a la ALU
    reg [N_BITS-1:0] dato2ALU; // DatoB que ingresa a la ALU
    reg [N_BITS-1:0] dato2_preALU; // Dato que sale del MUX-forwardB
-   reg [N_BITS_REG-1:0] aluOpcode; // 6-bits que salen del bloque de control e ingresan a la ALU
+   wire [N_BITS_REG-1:0] aluOpcode; // 6-bits que salen del bloque de control e ingresan a la ALU
    
-   // Señales referidas a la unidad de encaminamiento/cortocircuito:
+   // Seï¿½ales referidas a la unidad de encaminamiento/cortocircuito:
    reg memToReg;
    reg regWrite_EX_MEM;
    reg regWrite_MEM_WB;
@@ -154,28 +154,28 @@ module execute #(
    
    
    ////////////////////////////////////////////////////
-   // Instanciacion de módulo de Control de ALU:
+   // Instanciacion de mï¿½dulo de Control de ALU:
    aluControl
    u_aluBlock (
       .i_aluOp(i_aluOP),  // 2bits
-      .i_funct(i_datoExtSigno[5:0]), // 6bits
-      .i_op(i_instruccion), // 6bits
+      .i_funct(i_instruccion[5:0]), // 6bits
+      .i_op(i_instruccion[31:26]), // 6bits
       
       .o_opcodeAlu(aluOpcode) // 32bits
    );
 
-   // Instanciacion de módulo de ALU:
+   // Instanciacion de mï¿½dulo de ALU:
    alu
    u_alu_1(
       .i_datoA(dato1ALU),
       .i_datoB(dato2ALU),
       .i_opcode(aluOpcode),
       
-      .o_aluResult(aluResult),
+      .o_aluResult(o_aluResult),
       .o_cero(o_ceroSignal)
    );
    
-   // Instanciacion de módulo de Cortocircuito:
+   // Instanciacion de mï¿½dulo de Cortocircuito:
    fowarding_unit
    u_corto (
       .i_rt_id(i_rt_id),

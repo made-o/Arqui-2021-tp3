@@ -1,4 +1,4 @@
-// Declaración de códigos de operacion:
+// Declaraciï¿½n de cï¿½digos de operacion:
 `define AND  6'b000000   // AND (bit-a-bit)
 `define OR   6'b000001   // OR (bit-a-bit)
 `define ADD  6'b000010   // ADD Word
@@ -37,7 +37,7 @@ module alu #(
 
    ////////////////////////////////////////////////////
    // Start-code:
-   always @(*) begin
+   always @(i_opcode or i_datoA or i_datoB) begin
       case(i_opcode)
          `AND:  o_aluResult = i_datoA & i_datoB;
          `OR:   o_aluResult = i_datoA | i_datoB;
