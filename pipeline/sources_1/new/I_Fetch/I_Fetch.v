@@ -1,18 +1,31 @@
 `timescale 1ns / 1ps
 
 module I_Fetch #(
-    parameter NBITS = 32      //! Tamaño de las intrucciones
+    parameter NBITS = 32,      //! Tamaño de las intrucciones
+    parameter ADDR_WIDTH = 5
   )(
     input  i_clk,         //! Clock
     input  i_reset,       //! Reset
     input  i_enable,      //! Enable
     input  i_halt,        //! Señal para detener el PC
     input  i_stall,       //! Señal para pausar el PC
+    input  i_inicializando,
     input  [NBITS-1:0] i_jump_address,  //! Dirección de salto en caso de branch/jump
     input  i_jump_select, //! Selección de salto (branch/jump select)
-
+    
+    input [ADDR_WIDTH-1:0] i_addr_tx,
+    
+    input i_WriteEnable,
+    input [ADDR_WIDTH-1:0] i_addr_carga,
+    input [NBITS-1:0] i_data_carga,
+    
+    input  i_exec_mode,
+    input  i_step,
+    
     output [NBITS-1:0] o_instruction, //! Instrucción de la memoria de instrucciones
-    output o_halt_signal              //! Señal de halt si se encuentra una instrucción HALT
+    output [NBITS-1:0] o_data_send_tx,
+    output o_halt_signal,              //! Señal de halt si se encuentra una instrucción HALT
+    output [NBITS-1:0] o_pc
   );
 
   //! Señales internas:
@@ -28,7 +41,12 @@ module I_Fetch #(
        .i_enable(i_enable),     //! Habilitación constante (en este caso está siempre activo)
        .i_halt(i_halt),         //! Señal de halt
        .i_stall(i_stall),       //! Señal de stall
+       .i_inicializando (i_inicializando),
        .i_pc(w_pc_next),        //! Siguiente valor del PC (seleccionado por el mux)
+       
+       .i_exec_mode(i_exec_mode),
+       .i_step(i_step),
+    
        .o_new_pc(w_pc_current)      //! Valor actual del PC
      );
 
@@ -54,8 +72,14 @@ module I_Fetch #(
                     .i_clk(i_clk),
                     .i_valid(i_enable),
                     .i_address(w_pc_current),    //! Dirección del PC
+                    .i_addr_tx(i_addr_tx), // Direccion de la memoria que se quiere enviar por uart
+                    .i_WriteEnable(i_WriteEnable),
+                    .i_addr_carga(i_addr_carga),
+                    .i_data_carga(i_data_carga),
                     .o_data(o_instruction),    //! Instrucción en la dirección actual
+                    .o_data_send_tx(o_data_send_tx),
                     .o_haltSignal(o_halt_signal) //! Señal HALT si se detecta una instrucción HALT
                   );
+   assign o_pc = w_pc_next;
 
 endmodule
