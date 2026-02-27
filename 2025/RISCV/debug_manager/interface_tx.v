@@ -59,7 +59,8 @@ module interface_tx
     input [N_BITS_INST-1:0] i_EX_datoLeido2,
     input [N_BITS_REG-1:0]  i_EX_rd_data_EX,
     input [N_BITS_REG-1:0]  i_EX_rt_OR_rd_EX,
-    input [7-1 : 0]         i_EX_control_bits_EX,
+    input [6-1 : 0]         i_EX_control_bits_EX,
+    input                   i_EX_ceroSignal,
 
     // Etapa MEM
     input [N_BITS_INST-1:0] i_MEM_data_mem_send, //el envio de la memoria de registros tiene su etapa aparte
@@ -137,7 +138,7 @@ module interface_tx
     assign IF_array[0] = i_pc;
     assign IF_array[1] = i_instruction;
 
-    assign ID_array[0] = {i_D_control_bits, i_D_rs, i_D_rd_or_rt, i_D_flush, 12'b0};
+    assign ID_array[0] = {3'b0, i_D_rs, 3'b0, i_D_rd_or_rt, i_D_control_bits, i_D_flush, 6'b0};
     assign ID_array[1] = i_D_dato_leido1;
     assign ID_array[2] = i_D_dato_leido2;
     assign ID_array[3] = i_D_sign_extension;
@@ -145,14 +146,14 @@ module interface_tx
 
     assign EX_array[0] = i_EX_aluResult;
     assign EX_array[1] = i_EX_datoLeido2;
-    assign EX_array[2] = {i_EX_rd_data_EX, i_EX_rt_OR_rd_EX, i_EX_control_bits_EX, 15'b0};
+    assign EX_array[2] = {3'b0, i_EX_rd_data_EX, 3'b0, i_EX_rt_OR_rd_EX, i_EX_control_bits_EX, 2'b0, i_EX_ceroSignal, 7'b0};
     
     assign MEM_array[0] = i_MEM_aluResult;
     assign MEM_array[1] = i_MEM_readDataMEM;
-    assign MEM_array[2] = {i_MEM_rd_data, i_MEM_rt_OR_rd, i_MEM_control_bits, 20'b0};
+    assign MEM_array[2] = {3'b0, i_MEM_rd_data, 3'b0, i_MEM_rt_OR_rd, i_MEM_control_bits, 14'b0};
 
     assign WB_array[0] = i_WB_writeData;
-    assign WB_array[1] = {i_rd_MEM_WB, i_rt_OR_rd, i_WB_regWrite, 21'b0};
+    assign WB_array[1] = {3'b0, i_rd_MEM_WB, 3'b0, i_rt_OR_rd, i_WB_regWrite, 15'b0};
 
     //reg                    tx_done;
     
@@ -356,7 +357,7 @@ module interface_tx
                 INDEX_RESET: begin
                     index_8_bit <= 3'b0;
                     o_tx_start <= 1'b0;
-                    data <= ID_array[0];
+                    data <= i_MEM_data_mem_send;
                 end
                 
                 REG: begin
@@ -391,6 +392,8 @@ module interface_tx
 
                 MEM: begin
                     data <= i_MEM_data_mem_send;
+                    if(o_mem_done == 1'b1)
+                        data <= i_D_reg_send;
                     if(o_done == 1'b0)
                         o_tx_start <= 1'b1;
                     
@@ -413,6 +416,7 @@ module interface_tx
                                 // Terminó de enviar todos los registros
                                 reg_num <= 5'b0;
                                 o_mem_done <= 1'b1;
+                                data <= i_D_reg_send;
                             end
                         end
                     end
