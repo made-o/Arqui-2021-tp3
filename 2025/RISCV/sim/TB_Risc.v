@@ -268,10 +268,16 @@ module TB_Risc;
             send_modo(8'h1E);
             
             // Preparar instrucciones
-            test_instructions[0] = 32'b001000_00010_00001_0111111111111111; //ADDI   20417FFF
-            test_instructions[1] = 32'b000000_00010_00001_01000_00000_100100; // AND 00414024
-            test_instructions[2] = 32'b000000_00011_00001_10000_00000_100101; //OR   00618025
-            test_instructions[3] = 32'hFFFFFFFF;  // HALT
+            //test_instructions[0] = 32'b001000_00010_00001_0111111111111111; //ADDI   20417FFF
+            //test_instructions[1] = 32'b000000_00010_00001_01000_00000_100100; // AND 00414024
+            //test_instructions[2] = 32'b000000_00011_00001_10000_00000_100101; //OR   00618025
+            //test_instructions[3] = 32'hFFFFFFFF;  // HALT
+            //num_instructions = 4;
+            // Preparar instrucciones en RISC-V
+            test_instructions[0] = 32'b011111111111__00001_000_00010_0010011; //ADDI rd, rs1, 7ff: 7F F0 81 13
+            test_instructions[1] = 32'b0000000_00001_00010_111_01000_0110011; //AND  rd, rs1, rs2: 00 11 74 33 
+            test_instructions[2] = 32'b0000000_00001_00011_110_10000_0110011; //OR   rd, rs1, rs2: 00 11 E8 33
+            test_instructions[3] = 32'hFFFFFFFF; // HALT (Personalizado)
             num_instructions = 4;
             
             // Enviar instrucciones

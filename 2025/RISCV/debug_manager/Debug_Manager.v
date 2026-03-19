@@ -38,7 +38,8 @@ module debug_manager #(
     input [N_BITS_INST-1 : 0]       i_EX_datoLeido2,
     input [N_BITS_REG-1 : 0]        i_EX_rd_data_EX,
     input [N_BITS_REG-1 : 0]        i_EX_rt_OR_rd_EX,
-    input [7-1 : 0]                 i_EX_control_bits_EX,
+    input [6-1 : 0]                 i_EX_control_bits_EX,
+    input                           i_EX_ceroSignal,
     
     // Datos provenientes de MEM
     input [N_BITS_INST-1:0]         i_MEM_data_mem_send, 
@@ -125,6 +126,7 @@ module debug_manager #(
         .i_EX_rd_data_EX(i_EX_rd_data_EX),
         .i_EX_rt_OR_rd_EX(i_EX_rt_OR_rd_EX),
         .i_EX_control_bits_EX(i_EX_control_bits_EX),
+        .i_EX_ceroSignal(i_EX_ceroSignal),
         
         // Etapa MEM
         .i_MEM_data_mem_send(i_MEM_data_mem_send),

@@ -13,8 +13,8 @@ module hazard_detector#
     
     input  wire [1:0]            i_branch,
     
-    input  wire [N_BITS_REG-1:0] i_rs,
-    input  wire [N_BITS_REG-1:0] i_rt,
+    input  wire [N_BITS_REG-1:0] i_rs1,
+    input  wire [N_BITS_REG-1:0] i_rs2,
     
     input  wire [N_BITS_REG-1:0] i_Alu_rt,
     input  wire [N_BITS_REG-1:0] i_Mem_rt,
@@ -39,16 +39,16 @@ module hazard_detector#
     
     always@(*)
     begin:data_hazard
-    
-        if((i_control_M_memRead_ID_EX == 1'b1) && ((i_rs == i_ID_EX_rt) || (i_rt == i_ID_EX_rt)) && (i_ID_EX_rt != 5'd0))
+        // WARNING, puede darce que la instruccion actual no necesite rs1 o rs2 y por ende el stall estaria de mas, por ejemplo una LUI
+        if((i_control_M_memRead_ID_EX == 1'b1) && ((i_rs1 == i_ID_EX_rt) || (i_rs2 == i_ID_EX_rt)) && (i_ID_EX_rt != 5'd0))
             o_stall = 1;
         else
             o_stall = 0;
     end
-    
+    //WARNING: parece un forwardin pero le faltan condiciones
     always@(*)
     begin:mux_data1
-        if(i_rs == i_Alu_rt && i_control_WB_regWrite_ex == 1)
+        if(i_rs1 == i_Alu_rt && i_control_WB_regWrite_ex == 1)
             dato_comparacion_1 = i_dato_salida_ALU;
         else
             dato_comparacion_1 = i_dato_leido_1;
@@ -56,36 +56,35 @@ module hazard_detector#
     
     always@(*)
     begin:mux_data2
-        if(i_rs == i_Mem_rt && i_control_WB_regWrite_mem == 1)
+        if(i_rs1 == i_Mem_rt && i_control_WB_regWrite_mem == 1)
             dato_comparacion_2 = i_dato_salida_mem;
         else
             dato_comparacion_2 = i_dato_leido_2;
     end
     
     always@(*)begin:control_hazard
-        if(i_branch == 2'b01)
-        begin
-            if(dato_comparacion_1 == dato_comparacion_2)
-            begin
+        o_flush = 0;
+        o_jump_direction = i_PC;
+        case(i_branch)
+            2'b01:begin
+                if(dato_comparacion_1 == dato_comparacion_2)
+                begin
+                    o_flush = 1;
+                    o_jump_direction = i_jump_direction;
+                end
+            end            
+            2'b11:begin
+                if(dato_comparacion_1 != dato_comparacion_2)
+                begin
+                    o_flush = 1;
+                    o_jump_direction = i_jump_direction;
+                end
+            end
+            2'b10:begin
                 o_flush = 1;
                 o_jump_direction = i_jump_direction;
             end
-            else
-            begin
-                o_flush = 0;
-                o_jump_direction = i_PC;
-            end
-        end
-        else if(i_branch == 2'b10)
-        begin
-            o_flush = 1;
-            o_jump_direction = i_jump_direction;
-        end
-        else
-        begin
-            o_flush = 0;
-            o_jump_direction = i_PC;
-        end
+        endcase
     end
  
 endmodule

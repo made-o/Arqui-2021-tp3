@@ -60,9 +60,9 @@ module Risc_Top #(
 
     //---- creo que no lo necesito ----
     (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_REG-1 : 0] w_rd_id; 
-    
+    wire w_ceroSignal;
     (* KEEP = "true", MARK_DEBUG = "true" *)wire [9-1:0] w_control_bits_ID;
-    (* KEEP = "true", MARK_DEBUG = "true" *)wire [7-1:0] w_control_bits_EX;
+    (* KEEP = "true", MARK_DEBUG = "true" *)wire [6-1:0] w_control_bits_EX;
     (* KEEP = "true", MARK_DEBUG = "true" *)wire [2-1:0] w_control_bits_MEM;
     
     (* KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_sign_extension;
@@ -192,6 +192,7 @@ module Risc_Top #(
         .i_EX_rd_data_EX(w_rd_data_EX),
         .i_EX_rt_OR_rd_EX(w_rt_OR_rd_EX),
         .i_EX_control_bits_EX(w_control_bits_EX),
+        .i_EX_ceroSignal(w_ceroSignal),
 
         // Datos provenientes de MEM
         .i_MEM_data_mem_send(w_MEM_mem_to_send),
@@ -305,19 +306,19 @@ module Risc_Top #(
         
         .o_dato_leido1(w_dato_leido1),
         .o_dato_leido2(w_dato_leido2),
-        .o_rs(w_rs_id),
-        .o_rt(w_rt_id),
+        .o_rs1(w_rs_id),
+        .o_rs2(w_rt_id),
         .o_rd_or_rt(w_rt_OR_rd_ID),
 
         .o_rd(w_rd_id),
         //.o_dato_ex_signo(),
 
-        .o_control_M_branch(w_control_bits_ID[1:0]),
-        .o_control_M_memRead(w_control_bits_ID[2]),
-        .o_control_WB_memtoReg(w_control_bits_ID[3]),
-        .o_control_EX_ALUOp(w_control_bits_ID[5:4]),
+        .o_control_EX_ALUSrc(w_control_bits_ID[0]),
+        .o_control_EX_ALUOp(w_control_bits_ID[2:1]),
+        .o_control_M_branch(w_control_bits_ID[4:3]),
+        .o_control_M_memRead(w_control_bits_ID[5]),
         .o_control_M_memWrite(w_control_bits_ID[6]),
-        .o_control_EX_ALUSrc(w_control_bits_ID[7]),
+        .o_control_WB_memtoReg(w_control_bits_ID[7]),
         .o_control_WB_regWrite(w_control_bits_ID[8]),
         /*Salidas del EX para comparar
         .o_branch(w_control_bits_EX[1:0]), //2bits
@@ -354,8 +355,8 @@ module Risc_Top #(
         .i_step(w_step),
         .i_halt(w_halt_ID),
 
-        .i_aluOP(w_control_bits_ID[5:4]),
-        .i_aluSrc(w_control_bits_ID[7]),
+        .i_aluOP(w_control_bits_ID[2:1]),
+        .i_aluSrc(w_control_bits_ID[0]),
 
         .i_datoLeido1(w_dato_leido1), 
         .i_datoLeido2(w_dato_leido2),
@@ -381,10 +382,10 @@ module Risc_Top #(
         // Se�ales que vienen de la etapa ID o de etapas siguientes:
         .i_regWrite_EX_MEM(1'b0),
         .i_regWrite_MEM_WB(1'b0),
-        .i_branch(w_control_bits_ID[1:0]),
-        .i_memRead(w_control_bits_ID[2]),
-        .i_memToReg(w_control_bits_ID[3]),
+        .i_branch(w_control_bits_ID[4:3]),
+        .i_memRead(w_control_bits_ID[5]),
         .i_memWrite(w_control_bits_ID[6]),
+        .i_memToReg(w_control_bits_ID[7]),
         .i_regWrite(w_control_bits_ID[8]),
         
         .o_instruccion(w_instruction_EX),
@@ -396,10 +397,10 @@ module Risc_Top #(
         //.o_regWrite_MEM_WB(w_regWrite_MEM_WB),
         .o_branch(w_control_bits_EX[1:0]), //2bits
         .o_memRead(w_control_bits_EX[2]), //1bits
-        .o_memToReg(w_control_bits_EX[3]), //1bits
-        .o_memWrite(w_control_bits_EX[4]), //1bits
+        .o_memWrite(w_control_bits_EX[3]), //1bits
+        .o_memToReg(w_control_bits_EX[4]), //1bits
         .o_regWrite(w_control_bits_EX[5]), //1bits
-        .o_ceroSignal(w_control_bits_EX[6]), //1bits
+        .o_ceroSignal(w_ceroSignal), //1bits
 
         .o_halt(w_halt_EX)
     );
@@ -415,10 +416,9 @@ module Risc_Top #(
         .i_halt(w_halt_EX),
 
         .i_memRead(w_control_bits_EX[2]),
-        .i_memToReg(w_control_bits_EX[3]),
-        .i_memWrite(w_control_bits_EX[4]),
+        .i_memWrite(w_control_bits_EX[3]),
+        .i_memToReg(w_control_bits_EX[4]),
         .i_regWrite(w_control_bits_EX[5]),
-   
    
         .i_aluResult(w_aluResult_EX), // retorna para la etapa EX - (i_memData)
         .i_datoLeido2(w_datoLeido2_EX), 

@@ -13,8 +13,8 @@ module regMemory #(
     input wire                   i_clk,
     //input wire                   i_reset ,
             
-    input wire [P_REG_WIDTH-1:0] i_reg_lectura1, //rs
-    input wire [P_REG_WIDTH-1:0] i_reg_lectura2, //rt
+    input wire [P_REG_WIDTH-1:0] i_reg_lectura1, //rs1
+    input wire [P_REG_WIDTH-1:0] i_reg_lectura2, //rs2
     input wire [P_REG_WIDTH-1:0] i_regWrite_addr,
     input wire [DATA_WIDTH-1:0]  i_dato_a_escribir,
     
