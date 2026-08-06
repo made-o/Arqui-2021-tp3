@@ -27,7 +27,7 @@ module control#
 	output reg 	 	 o_control_M_memWrite,
 	
 	//WB  - se?ales de control para write-back
-    output reg [1:0] o_control_WB_memtoReg,
+    output reg       o_control_WB_memtoReg,
 	output reg 		 o_control_WB_regWrite
 );
 	
@@ -36,10 +36,10 @@ module control#
 	
 	always@*
 	begin:control
-		if(i_reset || i_stall || i_flush)// || i_halt)
+		if(i_reset)// || i_stall || i_flush)// || i_halt)
 		begin
 			//o_control_EX_regDst 	 = 1'b0;
-			o_control_WB_memtoReg    = 1'b00;
+			o_control_WB_memtoReg    = 1'b0;
 			o_control_WB_regWrite    = 1'b0;
 			o_control_M_branch 	     = 2'b00;
 			o_control_M_memRead 	 = 1'b0;
@@ -56,7 +56,7 @@ module control#
 			7'b0110011:
             begin
                 //o_control_EX_regDst 	 = 1'b1;
-                o_control_WB_memtoReg    = 2'b00;//dato de la alu
+                o_control_WB_memtoReg    = 1'b0;//dato de la alu
                 o_control_WB_regWrite    = 1'b1;
                 o_control_M_branch 	     = 2'b00;
                 o_control_M_memRead 	 = 1'b0;
@@ -69,7 +69,7 @@ module control#
 			7'b0010011 ://addi
 			begin
 				//o_control_EX_regDst 	 = 1'b0;
-				o_control_WB_memtoReg 	= 2'b00;//dato de la alu
+				o_control_WB_memtoReg 	= 1'b0;//dato de la alu
 				o_control_WB_regWrite  	= 1'b1;
 				o_control_M_branch 	 	= 2'b00;
 				o_control_M_memRead 	= 1'b0;
@@ -85,7 +85,7 @@ module control#
 			//tipo beq
 			7'b1100011:
 			begin
-				o_control_WB_memtoReg 	= 2'b00;
+				o_control_WB_memtoReg 	= 1'b0;
 				o_control_WB_regWrite  	= 1'b0;
 				o_control_M_branch 	 	= 2'b11;
 
@@ -104,7 +104,7 @@ module control#
 			7'b1101111, 7'b1100111:
 			begin
 				//o_control_EX_regDst 	 = 1'b0;
-				o_control_WB_memtoReg 	= 2'b00;
+				o_control_WB_memtoReg 	= 1'b0;
 				o_control_WB_regWrite  	= 1'b0;
 				o_control_M_branch 	 	= 2'b10;
 				o_control_M_memRead 	= 1'b0;
@@ -117,7 +117,7 @@ module control#
 			7'b0100011:
 			begin
 				//o_control_EX_regDst 	 = 1'b0;
-				o_control_WB_memtoReg 	= 2'b00;
+				o_control_WB_memtoReg 	= 1'b0;
 				o_control_WB_regWrite  	= 1'b0;
 				o_control_M_branch 	 	= 2'b00;
 				o_control_M_memRead 	= 1'b0;
@@ -130,7 +130,7 @@ module control#
 			7'b0000011:
 			begin 
 				//o_control_EX_regDst	 = 1'b0;
-				o_control_WB_memtoReg 	= 2'b01;//dato leido de la memoria
+				o_control_WB_memtoReg 	= 1'b1;//dato leido de la memoria
 				o_control_WB_regWrite	= 1'b1;
 				o_control_M_branch 	 	= 2'b00;
 				o_control_M_memRead	 	= 1'b1;
@@ -142,7 +142,7 @@ module control#
 			7'b0110111:
 			begin 
 				//o_control_EX_regDst	 = 1'b0;
-				o_control_WB_memtoReg 	= 2'b10;//dato de la extension de signo
+				o_control_WB_memtoReg 	= 1'b0;//dato de la extension de signo
 				o_control_WB_regWrite	= 1'b1;
 				o_control_M_branch 	 	= 2'b00;
 				o_control_M_memRead	 	= 1'b0;
@@ -153,7 +153,7 @@ module control#
 			default: //halt o no valida
 			begin
 			    //o_control_EX_regDst	 = 1'b0;
-				o_control_WB_memtoReg 	= 2'b00;
+				o_control_WB_memtoReg 	= 1'b0;
 				o_control_WB_regWrite	= 1'b0;
 				o_control_M_branch 	 	= 2'b00;
 				o_control_M_memRead	 	= 1'b0;
@@ -166,7 +166,7 @@ module control#
 		else
 		begin
 			//o_control_EX_regDst 	 = 1'b0;
-			o_control_WB_memtoReg    = 2'b00;
+			o_control_WB_memtoReg    = 1'b0;
 			o_control_WB_regWrite    = 1'b0;
 			o_control_M_branch 	     = 2'b00;
 			o_control_M_memRead 	 = 1'b0;

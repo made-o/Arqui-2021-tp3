@@ -9,16 +9,18 @@ module instructionDecode#(
 (   
     //Señales De Entrada
     //de el modulo Deco
-    input  wire [N_BITS-1:0]         i_instruccion,
-    input  wire [N_BITS-1:0]         i_WB_data_to_w,
-    input  wire [N_REG_BITS-1:0]     i_dato_a_escribir_addr,
-    input  wire [N_BITS-1:0]         i_pc_4,
     input  wire                      i_clk, 
     input  wire                      i_reset,
+
     input                            i_exec_mode,
     input                            i_step,
 
-    input wire              i_halt,
+    input wire                       i_halt,
+
+    input  wire [N_BITS-1:0]         i_instruccion,
+    input  wire [N_BITS-1:0]         i_WB_data_to_write,
+    input  wire [N_REG_BITS-1:0]     i_addr_a_escribir,
+    input  wire [N_BITS-1:0]         i_pc_4,
     
     input [N_REG_BITS-1:0] i_addr_tx_ID,
      
@@ -30,30 +32,33 @@ module instructionDecode#(
     input  wire                  i_regWrite,
     
     input  wire                  i_control_M_memRead_ID_EX,
-    input  wire                  i_control_WB_regWrite_ex,
-    input  wire                  i_control_WB_regWrite_mem,
+    input  wire                  i_control_WB_regWrite_ID_EX,
+    input  wire [N_REG_BITS-1:0] i_EX_MEM_rt,
+    input  wire                  i_control_M_memRead_EX_MEM,
+    input  wire                  i_control_WB_regWrite_EX_MEM,
     input  wire [N_BITS-1:0]     i_dato_salida_ALU,
-    input  wire [N_BITS-1:0]     i_dato_salida_mem,
-    input  wire [N_REG_BITS-1:0] i_Alu_rt,
-    input  wire [N_REG_BITS-1:0] i_Mem_rt,
+    //input  wire [N_BITS-1:0]     i_dato_salida_mem,
+    //input  wire [N_REG_BITS-1:0] i_Alu_rt,
+    //input  wire [N_REG_BITS-1:0] i_Mem_rt,
     
     //Señales de Salida
     output reg [N_BITS-1:0] o_instruccion,
+
     output [N_BITS-1:0] o_data_send_tx_ID,
         
     // generales
-    output wire [N_BITS-1:0] o_dato_leido1,
-    output wire [N_BITS-1:0] o_dato_leido2,
+    output reg [N_BITS-1:0] o_dato_leido1,
+    output reg [N_BITS-1:0] o_dato_leido2,
     output reg [N_REG_BITS-1:0] o_rs1,
     output reg [N_REG_BITS-1:0] o_rs2,
-    output reg  [N_REG_BITS-1:0] o_rd_or_rt,
+    //output reg  [N_REG_BITS-1:0] o_rd_or_rt, //--- no se si lo necesito----
 
-    output reg [N_REG_BITS-1:0] o_rd, //--- no se si lo necesito----
+    output reg [N_REG_BITS-1:0] o_rd, 
     //output wire [N_BITS-1:0] o_dato_ex_signo,
     //output reg [N_BITS-1:0] o_DstSalto,
     
     // Control
-    output reg [1:0]        o_control_WB_memtoReg,
+    output reg              o_control_WB_memtoReg,
     output reg              o_control_WB_regWrite,
     output reg [1:0]        o_control_M_branch,
     output reg              o_control_M_memWrite,
@@ -66,16 +71,17 @@ module instructionDecode#(
     //output reg              o_PCWrite, 
          
     output reg  [N_BITS-1:0] o_sign_extension,
+    output reg  [N_BITS-1:0] o_shamt,
     
     output wire [N_BITS-1:0] o_jump_direction,
 
     //output o_cpu_finished,
     
-    output wire              o_flush,
     output reg               o_halt,
+    output wire              o_flush,
     output wire              o_stall
 );
-    wire [1:0]        w_control_WB_memtoReg;
+    wire              w_control_WB_memtoReg;
     wire              w_control_WB_regWrite;
     wire [1:0]        w_control_M_branch;
     wire              w_control_M_memWrite;
@@ -83,6 +89,9 @@ module instructionDecode#(
     wire [1:0]        w_control_EX_ALUSrc;
     wire [1:0]        w_control_EX_ALUOp;
     wire [N_BITS-1:0]   w_sign_extension;
+
+    wire [N_BITS-1:0] w_dato_leido1;
+    wire [N_BITS-1:0] w_dato_leido2;
 
     wire [N_BITS-1:0] jump_direction;
     
@@ -107,13 +116,13 @@ module instructionDecode#(
     //        w_rd_or_rt = i_instruccion[20:16];
     //end
     
-    always @(posedge i_clk) begin: memWrite
+    /*always @(posedge i_clk) begin: memWrite
             i_WriteEnable <= i_regWrite;
             //i_ReadEnable <= 1;
             //i_oEnable <= 1;
             //valid <= 1;
     end//end_always
-    
+    */
     /*
     always @(negedge i_clk) begin: memRead
         i_WriteEnable = 0;
@@ -130,18 +139,18 @@ module instructionDecode#(
             
             .i_reg_lectura1(i_instruccion[19:15]), //rs1
             .i_reg_lectura2(i_instruccion[24:20]), //rs2
-            .i_regWrite_addr(i_dato_a_escribir_addr),
-            .i_dato_a_escribir(i_WB_data_to_w),
+            .i_regWrite_addr(i_addr_a_escribir),
+            .i_dato_a_escribir(i_WB_data_to_write),
             
             //.i_oEnable(i_oEnable),
-            .i_WriteEnable (i_WriteEnable),
+            .i_WriteEnable (i_regWrite),
             //.i_ReadEnable (i_ReadEnable),
             
             .i_addr_tx(i_addr_tx_ID),
             
             .o_data_send_tx(o_data_send_tx_ID),
-            .o_data1(o_dato_leido1),
-            .o_data2(o_dato_leido2)
+            .o_data1(w_dato_leido1),
+            .o_data2(w_dato_leido2)
         );
         
     control#(
@@ -178,7 +187,7 @@ module instructionDecode#(
         .i_sign_extension2  (i_instruccion[11:7]),
         .i_sign_extension3  (i_instruccion[19:12]),
         .i_opcode           (i_instruccion[6:0]),
-        .i_rs1              (o_dato_leido1),
+        .i_rs1              (w_dato_leido1),
         .i_pc               (i_pc_4),
         
         .o_jump_direction (jump_direction),
@@ -189,38 +198,65 @@ module instructionDecode#(
         .N_BITS      (32),
         .N_BITS_REG  (5)
     ) hazard_d(
-        .i_control_WB_regWrite_ex   (i_control_WB_regWrite_ex),
-        .i_control_WB_regWrite_mem  (i_control_WB_regWrite_mem),
-        .i_control_M_memRead_ID_EX  (i_control_M_memRead_ID_EX),
-        .i_branch                   (w_control_M_branch),
-        .i_rs1                      (i_instruccion[19:15]),
-        .i_rs2                      (i_instruccion[24:20]),
-        .i_Alu_rt                   (i_Alu_rt),
-        .i_Mem_rt                   (i_Mem_rt),
-        .i_ID_EX_rt                 (i_ID_EX_rt),
-    
-        .i_jump_direction           (jump_direction),
-        .i_PC                       (i_pc_4),
-        .i_dato_leido_1             (o_dato_leido1),
-        .i_dato_leido_2             (o_dato_leido2),
-        .i_dato_salida_ALU          (i_dato_salida_ALU),
-        .i_dato_salida_mem          (i_dato_salida_mem),
-        .o_flush                    (o_flush),
-        .o_stall                    (o_stall),
-        .o_jump_direction           (o_jump_direction)
+        .i_branch                       (w_control_M_branch),
+        .i_rs1                          (i_instruccion[19:15]),
+        .i_rs2                          (i_instruccion[24:20]),
+        .i_jump_direction               (jump_direction),
+        .i_PC                           (i_pc_4),
+        .i_dato_leido_1                 (w_dato_leido1),
+        .i_dato_leido_2                 (w_dato_leido2),
+
+        .i_opcode                       (i_instruccion[6:0]),
+        
+        .i_ID_EX_rt                     (i_ID_EX_rt),
+        
+        .i_control_WB_regWrite_ID_EX    (i_control_WB_regWrite_ID_EX),
+        .i_control_M_memRead_ID_EX      (i_control_M_memRead_ID_EX),
+        
+        .i_EX_MEM_rt                    (i_EX_MEM_rt),
+        .i_control_M_memRead_EX_MEM     (i_control_M_memRead_EX_MEM),
+        .i_control_WB_regWrite_EX_MEM   (i_control_WB_regWrite_EX_MEM),
+        
+        //.i_Alu_rt                       (i_Alu_rt),
+        //.i_Mem_rt                       (i_Mem_rt),
+        
+        .i_dato_salida_ALU              (i_dato_salida_ALU),
+        //.i_dato_salida_mem              (i_dato_salida_mem),
+        
+        
+        .o_flush                        (o_flush),
+        .o_stall                        (o_stall),
+        .o_jump_direction               (o_jump_direction)
     );
     
     always @(posedge i_clk) begin: ID_EX
         if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))begin
-            o_control_WB_memtoReg   <= w_control_WB_memtoReg;
-            o_control_WB_regWrite   <= w_control_WB_regWrite;
-            o_control_M_branch      <= w_control_M_branch;
-            o_control_M_memWrite    <= w_control_M_memWrite;
-            o_control_M_memRead     <= w_control_M_memRead;
-            o_control_EX_ALUSrc     <= w_control_EX_ALUSrc;
-            o_control_EX_ALUOp      <= w_control_EX_ALUOp;
+            if(o_flush || o_stall)
+            begin
+                o_control_WB_memtoReg   <= 1'b0;
+                o_control_WB_regWrite   <= 1'b0;
+                o_control_M_branch      <= 2'b00;
+                o_control_M_memRead     <= 1'b0;
+                o_control_M_memWrite    <= 1'b0;
+                o_control_EX_ALUOp      <= 2'b00;
+                o_control_EX_ALUSrc     <= 2'b00;
+            end
+            else
+            begin
+                o_control_WB_memtoReg   <= w_control_WB_memtoReg;
+                o_control_WB_regWrite   <= w_control_WB_regWrite;
+                o_control_M_branch      <= w_control_M_branch;
+                o_control_M_memWrite    <= w_control_M_memWrite;
+                o_control_M_memRead     <= w_control_M_memRead;
+                o_control_EX_ALUSrc     <= w_control_EX_ALUSrc;
+                o_control_EX_ALUOp      <= w_control_EX_ALUOp;
+            end
+
+            o_dato_leido1           <= w_dato_leido1;
+            o_dato_leido2           <= w_dato_leido2;
             o_instruccion           <= i_instruccion;
             o_sign_extension        <= w_sign_extension;
+            o_shamt                 <= {27'b0, i_instruccion[24:20]};
             o_rs1                   <= i_instruccion[19:15];
             o_rs2                   <= i_instruccion[24:20];
             //o_rd_or_rt              <= w_rd_or_rt;

@@ -25,12 +25,16 @@ module memory #(
    // Entradas que van a ser salidas directas a la sig. etapa
    input  [N_BITS-1:0]     i_aluResult, // retorna para la etapa EX - (i_memData)
    input  [N_BITS-1:0]     i_datoLeido2, 
-   input  [N_BITS_REG-1:0] i_rt_OR_rd,
-   input  [N_BITS_REG-1:0] i_rd_EX_MEM, // retorna para la etapa EX - bloque forwarding
+   input  [N_BITS_REG-1:0] i_rd,
+   //input  [N_BITS_REG-1:0] i_rd_EX_MEM, // retorna para la etapa EX - bloque forwarding
    input                   i_exec_mode,
    input                   i_step,
    
    input [$clog2(RAM_DEPTH)-1:0] i_addr_tx_MEM,
+
+   input [1:0]  i_mem_size,
+   input        i_mem_unsigned,
+
    // OUTPUTS:
    output [N_BITS-1:0] o_data_send_tx_MEM,
 
@@ -44,8 +48,8 @@ module memory #(
 
    output reg [N_BITS-1:0]     o_readData,
    output reg [N_BITS-1:0]     o_aluResult,
-   output reg [N_BITS_REG-1:0] o_rt_OR_rd,
-   output reg [N_BITS_REG-1:0] o_rd_MEM
+   output reg [N_BITS_REG-1:0] o_rd
+   //output reg [N_BITS_REG-1:0] o_rd_MEM
 );
    
    // Variables internas:
@@ -76,24 +80,29 @@ module memory #(
         .RAM_WIDTH(N_BITS),
         .RAM_DEPTH(RAM_DEPTH)
     )u_dataMemory (
+      .i_clk(i_clk),
       .i_address(i_aluResult[$clog2(RAM_DEPTH)-1:0]),
       .i_write_data(i_datoLeido2),
       //.i_valid(i_valid),
-      .i_clk(i_clk),
       .i_read_enable(i_memRead),
       .i_write_enable(i_memWrite),
+
+      .i_mem_size(i_mem_size),
+      .i_mem_unsigned(i_mem_unsigned),
+
+      .o_read_data(w_readData),
+
+      // Debug manager
       .i_addr_tx(i_addr_tx_MEM),
-      
-      .o_data_send_tx(o_data_send_tx_MEM),
-      .o_read_data(w_readData)
+      .o_data_send_tx(o_data_send_tx_MEM)
    );
 
    always @(posedge i_clk) begin: ID_EX
 
       if(i_reset) begin
          o_readData        <= {N_BITS{1'b0}};
-         o_rd_MEM          <= {N_BITS_REG{1'b0}};
-         o_rt_OR_rd        <= {N_BITS_REG{1'b0}};
+         //o_rd_MEM          <= {N_BITS_REG{1'b0}};
+         o_rd        <= {N_BITS_REG{1'b0}};
          o_memToReg_MEM_WB <= 1'b0;
          o_regWrite_MEM_WB <= 1'b0;
          o_aluResult         <= {N_BITS{1'b0}};
@@ -104,9 +113,9 @@ module memory #(
          o_readData        <= w_readData;
          o_aluResult       <= i_aluResult;
          // Para el modulo forwarding
-         o_rd_MEM          <= i_rd_EX_MEM;
+         //o_rd_MEM          <= i_rd_EX_MEM;
          // Direccion de carga en la memoria de registros.
-         o_rt_OR_rd        <= i_rt_OR_rd;
+         o_rd        <= i_rd;
          // Bits de control
          o_memToReg_MEM_WB <= i_memToReg;//selecciona entre los dos datos de 32 bits
          o_regWrite_MEM_WB <= i_regWrite;//Define si se escribe o no en los registros(tambien forwarding)

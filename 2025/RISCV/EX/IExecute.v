@@ -6,59 +6,61 @@ module IExecute #(
    parameter N_BITS_REG = 5,
    parameter N_OPCODE = 6
 )
-   // Inputs & Outputs:
-(  input i_clk, i_reset,
+   // Inputs:
+(  input  i_clk, i_reset,
    input  i_exec_mode,
    input  i_step,
+   input  i_halt,
+   
    // Se�ales de control de la EX:
    input [1:0] i_aluOP, // 2-bits
-   input i_aluSrc,
+   input [1:0] i_aluSrc,
    //input i_regDst,
    
    // Datos que vienen de la etapa ID:
    input [N_BITS-1:0] i_datoLeido1, // 32bits
    input [N_BITS-1:0] i_datoLeido2,
    input [N_BITS-1:0] i_datoExtSigno,
+   input [N_BITS-1:0] i_shamt,
    
    input [N_BITS-1:0] i_instruccion, // 6-bits
-   input [N_BITS_REG-1:0] i_rt_id, // 6-bits
-   input [N_BITS_REG-1:0] i_rd_id, // 6-bits
-   input [N_BITS_REG-1:0] i_rt_OR_rd, // 6-bits
-   
-   // Se�al de entrada al m�dulo de control de la ALU
-   //input [N_BITS_REG:0]   i_opcode, // 6bits
+   input [N_BITS_REG-1:0] i_rs1_id, // 5-bits
+   input [N_BITS_REG-1:0] i_rs2_id, // 5-bits
+   input [N_BITS_REG-1:0] i_rd_id, // 5-bits
    
    // Se�ales extras que entran a la unidad de cortocircuito:
    input [N_BITS_REG-1:0] i_rd_EX_MEM, //6-bits
    input [N_BITS_REG-1:0] i_rd_MEM_WB, //6-bits
-   input [N_BITS_REG-1:0] i_rs_id,     //6-bits
+   input i_regWrite_EX_MEM,
+   input i_regWrite_MEM_WB,
+   //input [N_BITS_REG-1:0] i_rs_id,     //6-bits
    
    // Se�ales que vienen de las etapas WB y MEM (para usar en MUX)
    input [N_BITS-1:0] i_wbData,
    input [N_BITS-1:0] i_memData,
    
-   // Se�ales que vienen de la etapa ID o de etapas siguientes:
-   input i_memToReg,
-   input i_regWrite_EX_MEM,
-   input i_regWrite_MEM_WB,
+   // Se�ales que vienen de la etapa ID:
    input [1:0] i_branch,
+   input i_memRead,
    input i_memWrite,
-   input [1:0]i_memRead,
+   input i_memToReg,
    input i_regWrite,
-   input i_halt,
-   
+
+   // Outputs:
    output reg [N_BITS-1:0] o_instruccion,
-   output reg  o_ceroSignal,
-   output reg  [N_BITS-1:0] o_aluResult,
+   output reg [N_BITS-1:0] o_aluResult,
+   output reg o_ceroSignal,
    output reg [N_BITS-1:0] o_datoLeido2,
    output reg [N_BITS_REG-1:0] o_rd_data, //5-bits
-   output reg [N_BITS_REG-1:0] o_rt_OR_rd,
-   output reg o_memToReg,
+   output reg [2-1:0] o_mem_size,
+   output reg o_meme_unsigned, 
+   //output reg [N_BITS_REG-1:0] o_rs2,
    //output reg o_regWrite_EX_MEM,
    //output reg o_regWrite_MEM_WB,
    output reg [1:0] o_branch,
-   output reg o_memWrite,
    output reg o_memRead,
+   output reg o_memWrite,
+   output reg o_memToReg,
    output reg o_regWrite,
 
    output reg o_halt
@@ -67,8 +69,8 @@ module IExecute #(
    wire  [N_BITS-1:0] w_aluResult;
    wire  w_ceroSignal;
    // Se�ales de control de la unidad de Cortorcircuito:
-   wire w_forwardA;
-   wire w_forwardB;
+   wire [1:0] w_forwardA;
+   wire [1:0] w_forwardB;
    // Internal Variables:
    // Se�ales referidas al bloque ALU:
    reg [N_BITS-1:0] dato1ALU; // DatoA que ingresa a la ALU
@@ -111,8 +113,9 @@ module IExecute #(
    // Multiplexor for ALUSrc:
    always @(*)begin //dato2_preALU or i_datoLeido2 or i_aluSrc) begin
       case(i_aluSrc)
-         1'b0: dato2ALU = dato2_preALU;
-         1'b1: dato2ALU = i_datoExtSigno;
+         2'b00: dato2ALU = dato2_preALU;
+         2'b01: dato2ALU = i_datoExtSigno;
+         2'b10: dato2ALU = i_shamt;
          default: dato2ALU = 32'h00000000;
       endcase
    end//end_always
@@ -136,26 +139,35 @@ module IExecute #(
          o_ceroSignal <= 1'b0;
          o_datoLeido2 <= 32'h00000000;
          o_rd_data <= 6'b000000;
-         o_rt_OR_rd <= 6'b000000;
+         o_meme_unsigned <= 1'b0; 
+         o_mem_size <= 2'b0;
+         //o_rs2 <= 6'b000000;
          o_regWrite  <= 1'b0;
       end//end_if
       else begin
          if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))
          begin
-            o_instruccion <= i_instruccion;
-            o_memToReg <= i_memToReg;
-            //o_regWrite_EX_MEM <= i_regWrite_EX_MEM;
-            //o_regWrite_MEM_WB <= i_regWrite_MEM_WB;
-            o_branch   <= i_branch;
-            o_memWrite <= i_memWrite;
-            o_memRead  <= i_memRead;
-            o_aluResult <= w_aluResult;
-            o_ceroSignal <= w_ceroSignal;
-            o_datoLeido2 <= dato2_preALU;//dato que se quiere guardar en MEM
-            o_rd_data <= i_rd_id;//direccion de la MEM en donde se guarda el dato
-            o_rt_OR_rd <= i_rt_OR_rd;//direccion pero de la memoria de registros que se va a usar en Wb
-            o_regWrite  <= i_regWrite;
-            o_halt      <= i_halt;
+            //Pasan directo
+             //Control
+               o_halt         <= i_halt;
+               o_branch       <= i_branch;
+               o_regWrite     <= i_regWrite;
+               o_memWrite     <= i_memWrite;
+               o_memRead      <= i_memRead;
+               o_memToReg     <= i_memToReg;
+             //No control  
+               o_instruccion  <= i_instruccion;
+               o_rd_data      <= i_rd_id;//Registro que se usa en wb para guradar en la memoria de registros  
+               o_meme_unsigned <= i_instruccion[14];
+               o_mem_size     <= i_instruccion[13:12];
+               //o_regWrite_EX_MEM <= i_regWrite_EX_MEM;
+               //o_regWrite_MEM_WB <= i_regWrite_MEM_WB;
+               //o_rs2        <= i_rs2_id;//direccion pero de la memoria de registros que se va a usar en Wb
+
+            //Generados en esta etapa
+               o_aluResult    <= w_aluResult;
+               o_ceroSignal   <= w_ceroSignal;
+               o_datoLeido2   <= dato2_preALU;//dato que se quiere guardar en MEM
          end
       end//end_else
    end//end_always
@@ -166,8 +178,9 @@ module IExecute #(
    aluControl
    u_aluBlock (
       .i_aluOp(i_aluOP),  // 2bits
-      .i_funct(i_instruccion[5:0]), // 6bits
-      .i_op(i_instruccion[31:26]), // 6bits
+      .i_func3(i_instruccion[14:12]), // 3bits
+      .i_func7(i_instruccion[31:25]), // 7bits
+      .i_op(i_instruccion[6:0]), // 7bits
       
       .o_opcodeAlu(aluOpcode) // 32bits
    );
@@ -186,10 +199,13 @@ module IExecute #(
    // Instanciacion de m�dulo de Cortocircuito:
    fowarding_unit
    u_corto (
-      .i_rt_id(i_rt_id),
-      .i_rs_id(i_rs_id),
+      // Inputs de la etapa ID/EX:
+      .i_rs1_id(i_rs1_id),
+      .i_rs2_id(i_rs2_id),
+      // Inputs de la etapa EX/MEM:
       .i_rd_EX_MEM(i_rd_EX_MEM),
       .i_regWrite_EX_MEM(i_regWrite_EX_MEM),
+      // Inputs de la etapa MEM/WB:
       .i_rd_MEM_WB(i_rd_MEM_WB),
       .i_regWrite_MEM_WB(i_regWrite_MEM_WB),
       

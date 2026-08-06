@@ -1,7 +1,7 @@
 # Clock signal
 set_property PACKAGE_PIN W5 [get_ports i_clk_crudo]
     set_property IOSTANDARD LVCMOS33 [get_ports i_clk_crudo]
-    create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports i_clk_crudo]
+    ##create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports i_clk_crudo]
     ##create_generated_clock -name baud_clk -source [get_pins uut_baud_gen/i_clk] -edges {1 2 3} -edge_shift {0 217 434} [get_pins uut_baud_gen/o_flag_max_tick]
 
 ##Buton reset

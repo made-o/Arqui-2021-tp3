@@ -252,7 +252,97 @@ module TB_Risc;
             $display("\n[%0t] ✓ TEST 1 COMPLETADO\n", $time);
         end
     endtask
-    
+
+    //==========================================================================
+    // TEST 27: Segundo ejemplo, test comun.
+    //==========================================================================
+    task test_ejemplo_2_normal;
+        begin
+            $display("\n[%0t] ╔════════════════════════════════════════╗", $time);
+            $display("[%0t] ║  TEST 27: segundo ejemplo test comun      ║", $time);
+            $display("[%0t] ╚════════════════════════════════════════╝\n", $time);
+            
+            system_reset();
+
+            // Preparar instrucciones
+            test_instructions[0] = 32'b0000010_01000_00001_010_01010_00000_11; //
+            test_instructions[1] = 32'b0100000_00011_00010_000_01011_01100_11; // 
+            test_instructions[2] = 32'b0000000_00100_00011_000_01100_01100_11; //
+            test_instructions[3] = 32'b0000001_10000_00001_010_01101_00000_11; //
+            test_instructions[4] = 32'b0000000_00110_00101_000_01110_01100_11; //
+            test_instructions[5] = 32'hFFFFFFFF;  // HALT
+            num_instructions = 6;
+            
+            // Enviar instrucciones
+            $display("[%0t] Enviando %0d instrucciones...\n", $time, num_instructions);
+            for (i = 0; i < num_instructions; i = i + 1) begin
+                send_instruction(test_instructions[i]);
+                #1000;  // Pequeña pausa entre instrucciones
+            end
+            //8680
+            send_modo(8'h1E);
+            #27000000;
+            send_modo(8'h1E);
+            #27000000;
+            send_modo(8'h1E);
+            #27000000;
+            send_modo(8'h1E);
+            #27000000;
+            send_modo(8'h1E);
+            #27000000;
+            send_modo(8'h1E);
+            #27000000;
+            // Esperar transición a SEND y completar
+            $display("\n[%0t] Esperando que complete el proceso...", $time);
+            wait_send_complete(10000000);  // 1M ciclos de timeout
+            
+            $display("\n[%0t] ✓ TEST 1 COMPLETADO\n", $time);
+        end
+    endtask
+
+    //==========================================================================
+    // TEST: Se envian las instruccioens iguales a las del libro en hazard data load.
+    //==========================================================================
+    task test_data_hazard_load;
+        begin
+            $display("\n[%0t] ╔════════════════════════════════════════╗", $time);
+            $display("[%0t] ║  TEST: Ejecicopm Hazard Data Load   ║", $time);
+            $display("[%0t] ╚════════════════════════════════════════╝\n", $time);
+            
+            system_reset();
+            
+            // Preparar instrucciones
+            //test_instructions[0] = 32'b001000_00010_00001_0111111111111111; //ADDI   20417FFF
+            //test_instructions[1] = 32'b000000_00010_00001_01000_00000_100100; // AND 00414024
+            //test_instructions[2] = 32'b000000_00011_00001_10000_00000_100101; //OR   00618025
+            //test_instructions[3] = 32'hFFFFFFFF;  // HALT
+            //num_instructions = 4;
+            // Preparar instrucciones en RISC-V
+            test_instructions[0] = 32'b000000010100_00001_000_00010_00000_11_; 
+            test_instructions[1] = 32'b00000_00_00101_00010_111_00100_01100_11; 
+            test_instructions[2] = 32'b00000_00_00110_00010_110_01000_01100_11;
+            test_instructions[3] = 32'b00000_00_00010_00100_000_01001_01100_11;
+            test_instructions[4] = 32'b01000_00_00111_00110_000_00001_01100_11;
+            test_instructions[5] = 32'hFFFFFFFF; // HALT (Personalizado)
+            num_instructions = 6;
+            
+            // Enviar instrucciones
+            $display("[%0t] Enviando %0d instrucciones...\n", $time, num_instructions);
+            for (i = 0; i < num_instructions; i = i + 1) begin
+                send_instruction(test_instructions[i]);
+                #1000;  // Pequeña pausa entre instrucciones
+            end
+            
+            // Definiendo modo
+            send_modo(8'h1E);
+            
+            // Esperar transición a SEND y completar
+            $display("\n[%0t] Esperando que complete el proceso...", $time);
+            wait_send_complete(10000000);  // 1M ciclos de timeout
+            
+            $display("\n[%0t] ✓ TEST 1 COMPLETADO\n", $time);
+        end
+    endtask
     //==========================================================================
     // TEST 2: Enviar exactamente 31 instrucciones (límite sin HALT)
     //==========================================================================
@@ -365,6 +455,9 @@ module TB_Risc;
         $display("\n");
         
         // Ejecutar tests
+        test_ejemplo_2_normal();
+        #50000;
+        
         //test_infinito_stall();
         test_normal_instructions();
         #50000;

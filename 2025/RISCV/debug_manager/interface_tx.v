@@ -32,7 +32,7 @@ module interface_tx
     input wire i_clk, i_reset,
     
     input wire i_exec_mode, //si es continuo o paso a paso
-    input wire i_step,      //ejecutar un paso
+    input wire i_send_start,      //ejecutar un paso
     
     //Valores para enviar al UART
     //input wire [N_BITS_INSTR-1:0]              i_pc,
@@ -47,9 +47,10 @@ module interface_tx
     
     input [N_BITS_INST-1:0] i_D_dato_leido1,//32
     input [N_BITS_INST-1:0] i_D_dato_leido2,//32
-    input [9-1:0]           i_D_control_bits,//9
-    input [N_BITS_REG-1:0]  i_D_rs,//5
-    input [N_BITS_REG-1:0]  i_D_rd_or_rt,//5
+    input [10-1:0]          i_D_control_bits,//10
+    input [N_BITS_REG-1:0]  i_D_rs1,//5
+    input [N_BITS_REG-1:0]  i_D_rs2,//5
+    input [N_BITS_REG-1:0]  i_D_rd,//5
     input [N_BITS_INST-1:0] i_D_sign_extension,//32
     input [N_BITS_INST-1:0] i_D_jump_direction,//32
     input                   i_D_flush,//1
@@ -58,7 +59,7 @@ module interface_tx
     input [N_BITS_INST-1:0] i_EX_aluResult,
     input [N_BITS_INST-1:0] i_EX_datoLeido2,
     input [N_BITS_REG-1:0]  i_EX_rd_data_EX,
-    input [N_BITS_REG-1:0]  i_EX_rt_OR_rd_EX,
+    //input [N_BITS_REG-1:0]  i_EX_rt_OR_rd_EX,
     input [6-1 : 0]         i_EX_control_bits_EX,
     input                   i_EX_ceroSignal,
 
@@ -67,14 +68,14 @@ module interface_tx
 
     input [N_BITS_INST-1:0] i_MEM_aluResult,
     input [N_BITS_INST-1:0] i_MEM_readDataMEM,
-    input [N_BITS_REG-1:0]  i_MEM_rd_data,
+    //input [N_BITS_REG-1:0]  i_MEM_rd_data,
     input [N_BITS_REG-1:0]  i_MEM_rt_OR_rd,
     input [2-1 : 0]         i_MEM_control_bits,
 
     // Etapa WB
     input [N_BITS_INST-1:0]         i_WB_writeData, 
-    input [N_BITS_REG-1:0]          i_rt_OR_rd, 
-    input [N_BITS_REG-1:0]          i_rd_MEM_WB, 
+    input [N_BITS_REG-1:0]          i_rd, 
+    //input [N_BITS_REG-1:0]          i_rd_MEM_WB, 
     input                           i_WB_regWrite, 
 
     input wire i_halt,
@@ -138,7 +139,7 @@ module interface_tx
     assign IF_array[0] = i_pc;
     assign IF_array[1] = i_instruction;
 
-    assign ID_array[0] = {3'b0, i_D_rs, 3'b0, i_D_rd_or_rt, i_D_control_bits, i_D_flush, 6'b0};
+    assign ID_array[0] = {3'b0, i_D_rs1, 3'b0, i_D_rd, i_D_control_bits, i_D_flush, i_D_rs2};
     assign ID_array[1] = i_D_dato_leido1;
     assign ID_array[2] = i_D_dato_leido2;
     assign ID_array[3] = i_D_sign_extension;
@@ -146,14 +147,14 @@ module interface_tx
 
     assign EX_array[0] = i_EX_aluResult;
     assign EX_array[1] = i_EX_datoLeido2;
-    assign EX_array[2] = {3'b0, i_EX_rd_data_EX, 3'b0, i_EX_rt_OR_rd_EX, i_EX_control_bits_EX, 2'b0, i_EX_ceroSignal, 7'b0};
+    assign EX_array[2] = {3'b0, i_EX_rd_data_EX, 3'b0, 5'b0/*i_EX_rt_OR_rd_EX*/, i_EX_control_bits_EX, 2'b0, i_EX_ceroSignal, 7'b0};
     
     assign MEM_array[0] = i_MEM_aluResult;
     assign MEM_array[1] = i_MEM_readDataMEM;
-    assign MEM_array[2] = {3'b0, i_MEM_rd_data, 3'b0, i_MEM_rt_OR_rd, i_MEM_control_bits, 14'b0};
+    assign MEM_array[2] = {3'b0, i_MEM_rt_OR_rd, 5'b0/*i_MEM_rd_data*/, 3'b0, i_MEM_control_bits, 14'b0};
 
     assign WB_array[0] = i_WB_writeData;
-    assign WB_array[1] = {3'b0, i_rd_MEM_WB, 3'b0, i_rt_OR_rd, i_WB_regWrite, 15'b0};
+    assign WB_array[1] = {3'b0, i_rd, 5'b0/*i_rd_MEM_WB*/, 3'b0, i_WB_regWrite, 15'b0};
 
     //reg                    tx_done;
     
@@ -456,7 +457,7 @@ module interface_tx
         
         case (current_state)
             IDLE: begin
-                if (i_halt || (i_exec_mode && i_step)) begin
+                if (i_halt || (i_exec_mode && i_send_start)) begin
                     next_state = IF_INIT;
                 end
             end
