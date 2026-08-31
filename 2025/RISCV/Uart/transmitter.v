@@ -1,3 +1,4 @@
+`timescale 1ns / 100ps
 module transmitter
   #( parameter D_BIT    = 8,// number of data bits
      parameter SB_TICK  = 16 //number of ticks needed for the stop bit

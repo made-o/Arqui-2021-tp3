@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 //==============================================================================
 // TESTBENCH COMPLETO - MIPS Top Module con Debug Manager
@@ -265,13 +265,15 @@ module TB_Risc;
             system_reset();
 
             // Preparar instrucciones
-            test_instructions[0] = 32'b0000010_01000_00001_010_01010_00000_11; //
-            test_instructions[1] = 32'b0100000_00011_00010_000_01011_01100_11; // 
-            test_instructions[2] = 32'b0000000_00100_00011_000_01100_01100_11; //
-            test_instructions[3] = 32'b0000001_10000_00001_010_01101_00000_11; //
-            test_instructions[4] = 32'b0000000_00110_00101_000_01110_01100_11; //
-            test_instructions[5] = 32'hFFFFFFFF;  // HALT
-            num_instructions = 6;
+            test_instructions[0] = 32'b0000000_00101_00000_000_00010_00100_11; //
+            test_instructions[1] = 32'b0000001_01000_00000_000_00100_00100_11; // 
+            test_instructions[2] = 32'b0000000_00000_00100_010_00011_00000_11; //
+            test_instructions[3] = 32'b0000000_00010_00011_000_01110_11000_11; //
+            test_instructions[4] = 32'b0000011_00011_00000_000_00001_00100_11; //
+            test_instructions[5] = 32'b0000011_00011_00000_000_00001_00100_11; // 
+            test_instructions[6] = 32'b0000000_00001_00000_000_00001_00100_11; //
+            test_instructions[7] = 32'hFFFFFFFF;  // HALT
+            num_instructions = 8;
             
             // Enviar instrucciones
             $display("[%0t] Enviando %0d instrucciones...\n", $time, num_instructions);
@@ -281,17 +283,45 @@ module TB_Risc;
             end
             //8680
             send_modo(8'h1E);
-            #27000000;
+            #11000000;
             send_modo(8'h1E);
-            #27000000;
+            #11000000;
             send_modo(8'h1E);
-            #27000000;
+            #11000000;
             send_modo(8'h1E);
-            #27000000;
+            #11000000;
             send_modo(8'h1E);
-            #27000000;
+            #11000000;
             send_modo(8'h1E);
-            #27000000;
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
+            send_modo(8'h1E);
+            #11000000;
             // Esperar transición a SEND y completar
             $display("\n[%0t] Esperando que complete el proceso...", $time);
             wait_send_complete(10000000);  // 1M ciclos de timeout

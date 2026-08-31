@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 module Risc_Top #(
     parameter N_BITS = 8,
@@ -69,6 +69,7 @@ module Risc_Top #(
     (* KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_shamt;
     (* KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_jump_direction;
     wire w_flush;
+    wire w_flush_mux;
     (*KEEP = "true", MARK_DEBUG = "true" *) wire w_stall;
     
     // Otras señales
@@ -115,6 +116,7 @@ module Risc_Top #(
 
     //Salidas de la etapa WB  
     wire [N_BITS_INST-1:0] w_WB_writeData;
+    wire [N_BITS_INST-1:0] w_WB_writeData_forwarding;
     wire [N_BITS_REG-1:0]  w_rd_WB; 
     //wire [N_BITS_REG-1:0]  w_rd_WB; 
     wire                   w_WB_regWrite;
@@ -246,7 +248,9 @@ module Risc_Top #(
         .i_stall(w_stall),
         .i_inicializando(w_inicializando), // ver bien como usar este flag, se usa en el modulo pc
         .i_jump_address(w_jump_direction),
-        .i_jump_select(w_flush),
+        //.i_jump_select(w_flush),
+        .i_flush(w_flush),
+        .i_flush_mux(w_flush_mux),
         
         // Interface para carga de instrucciones
         .i_WriteEnable(w_inst_write_en),
@@ -298,9 +302,12 @@ module Risc_Top #(
         .i_control_M_memRead_ID_EX(w_control_bits_ID[6]),
         .i_control_WB_regWrite_ID_EX(w_control_bits_ID[9]),
         .i_EX_MEM_rt(w_rd_data_EX),
+        .i_MEM_WB_rt(w_rd_MEM),
         .i_control_M_memRead_EX_MEM(w_control_bits_EX[2]),
         .i_control_WB_regWrite_EX_MEM(w_control_bits_EX[5]),
+        .i_control_WB_regWrite_MEM_WB(w_control_bits_MEM[1]),
         .i_dato_salida_ALU(w_aluResult_EX),
+        .i_dato_salida_MEM(w_WB_writeData_forwarding),
         //.i_dato_salida_mem(),
         //.i_Alu_rt(),
         //.i_Mem_rt(),
@@ -344,7 +351,7 @@ module Risc_Top #(
         .o_halt(w_halt_ID),
         
         .o_flush(w_flush),
-        
+        .o_flush_mux(w_flush_mux),
         .o_stall(w_stall)
     );
 
@@ -378,14 +385,14 @@ module Risc_Top #(
         .i_rd_id(w_rd_id),
         
         // Se�ales extras que entran a la unidad de cortocircuito:
-        .i_rd_EX_MEM(5'b01000), //5-bits
-        .i_rd_MEM_WB(5'b10000), //5-bits
-        .i_regWrite_EX_MEM(1'b0),
-        .i_regWrite_MEM_WB(1'b0),
+        .i_rd_EX_MEM(w_rd_data_EX), //5-bits
+        .i_rd_MEM_WB(w_rd_MEM), //5-bits
+        .i_regWrite_EX_MEM(w_control_bits_EX[5]),
+        .i_regWrite_MEM_WB(w_control_bits_MEM[1]),
         
         // Se�ales que vienen de las etapas WB y MEM (para usar en MUX)
-        .i_wbData(32'hf000270f),
-        .i_memData(32'hf072000f),
+        .i_wbData(w_aluResult_EX),
+        .i_memData(w_WB_writeData_forwarding),
         
         // Se�ales que vienen de la etapa ID:
         .i_branch(w_control_bits_ID[5:4]), //Puede que no lo use mas que en ID
@@ -483,6 +490,7 @@ module Risc_Top #(
         .o_cpu_finished(w_cpu_finished),
 
         .o_WB_writeData(w_WB_writeData), //salida del multiplexor
+        .o_WB_writeData_forwarding(w_WB_writeData_forwarding), //Salida para forwarding antes del latch WB_IF
         .o_rd(w_rd_WB), // reg a escribir en la etapa ID y el cortocircuito
         //.o_rd_MEM_WB(w_rd_WB), // para el cortocircuito de la etapa EX
         .o_WB_regWrite(w_WB_regWrite) //se�al de escritura en etapa ID

@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 (* keep = "true" *)module instruction_mem #(
     parameter DATA_WIDTH = 32,  //! RAM ancho de datos
@@ -102,9 +102,6 @@
   //! Asignar el contenido en la dirección de memoria solicitada a los datos
   always @(posedge i_clk)
   begin : lectura
-    if (i_flush) begin
-        ram_data <= 32'h0;
-    end
     if(i_valid && !i_stall && (i_exec_mode == 1'b0 || (i_exec_mode && i_step)))
     begin
       if((i_address >= DATA_DEPTH)) begin
@@ -112,6 +109,9 @@
       end else begin
         ram_data <= memBlock[i_address];
       end
+    end
+    if (i_flush && (i_exec_mode == 1'b0 || (i_exec_mode && i_step))) begin
+        ram_data <= 32'h0;
     end
   end
   

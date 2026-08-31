@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 module TB_UART_4_Instruction;
 

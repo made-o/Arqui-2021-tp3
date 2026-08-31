@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 module receiver
 #( parameter D_BIT    = 8 , // # data bits
              SB_TICK  = 16  // # ticks for 'stop' bits

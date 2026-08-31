@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 module pc_jump#
 (
@@ -25,6 +25,8 @@ module pc_jump#
     localparam [6:0] Tipo_Jal   = 7'b1101111;
     localparam [6:0] Tipo_Lui   = 7'b0110111;
 
+    reg [N_BITS_DW-2:0] w_jalr_target;
+
     always @(*) begin: extension_de_signo
         o_sign_extension = 32'b0;
         o_jump_direction = 32'b0;
@@ -32,7 +34,8 @@ module pc_jump#
             Tipo_L, Tipo_I, Tipo_Jarl:
             begin
                 o_sign_extension = {{20{i_sign_extension1[11]}},i_sign_extension1};
-                o_jump_direction = {(i_rs1[31:1] + o_sign_extension[31:1]), 1'b0};
+                w_jalr_target = i_rs1[31:1] + o_sign_extension[31:1];
+                o_jump_direction = {2'b00, w_jalr_target[30:1]};
             end
             Tipo_S:
             begin
@@ -42,12 +45,12 @@ module pc_jump#
             Tipo_B:
             begin
                 o_sign_extension = {{20{i_sign_extension1[11]}},i_sign_extension2[0],i_sign_extension1[10:5],i_sign_extension2[4:1], 1'b0};
-                o_jump_direction = i_pc + o_sign_extension;
+                o_jump_direction = i_pc + {{2{o_sign_extension[31]}},o_sign_extension[31:2]};
             end            
             Tipo_Jal:
             begin
                 o_sign_extension = {{12{i_sign_extension1[11]}},i_sign_extension3,i_sign_extension1[0],i_sign_extension1[10:1],1'b0};
-                o_jump_direction = i_pc + o_sign_extension;
+                o_jump_direction = i_pc + {{2{o_sign_extension[31]}},o_sign_extension[31:2]};
             end
             Tipo_Lui:
             begin

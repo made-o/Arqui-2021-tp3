@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 module baudrate_generator#(
     parameter N = 10, // number of bits in counter

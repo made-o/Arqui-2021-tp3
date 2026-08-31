@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 module IExecute #(
    // Parameters:
@@ -94,8 +94,8 @@ module IExecute #(
    always @(*)begin //i_datoLeido1 or i_wbData or i_memData or i_forwardA) begin
       case(w_forwardA)
          2'b00: dato1ALU = i_datoLeido1; 
-         2'b01: dato1ALU = i_wbData;
-         2'b10: dato1ALU = i_memData;
+         2'b10: dato1ALU = i_wbData;
+         2'b01: dato1ALU = i_memData;
          default: dato1ALU = 32'h00000000;
       endcase
    end//end_always
@@ -104,8 +104,8 @@ module IExecute #(
    always @(*)begin //i_datoLeido2 or i_wbData or i_memData or i_forwardB) begin
       case(w_forwardB)
          2'b00: dato2_preALU = i_datoLeido2; 
-         2'b01: dato2_preALU = i_wbData;
-         2'b10: dato2_preALU = i_memData;
+         2'b10: dato2_preALU = i_wbData;
+         2'b01: dato2_preALU = i_memData;
          default: dato2_preALU = 32'h00000000;
       endcase
    end//end_always

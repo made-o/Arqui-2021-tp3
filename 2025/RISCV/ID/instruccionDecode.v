@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 module instructionDecode#(
     // Parametros:
@@ -34,9 +34,12 @@ module instructionDecode#(
     input  wire                  i_control_M_memRead_ID_EX,
     input  wire                  i_control_WB_regWrite_ID_EX,
     input  wire [N_REG_BITS-1:0] i_EX_MEM_rt,
+    input  wire [N_REG_BITS-1:0] i_MEM_WB_rt,
     input  wire                  i_control_M_memRead_EX_MEM,
     input  wire                  i_control_WB_regWrite_EX_MEM,
+    input  wire                  i_control_WB_regWrite_MEM_WB,
     input  wire [N_BITS-1:0]     i_dato_salida_ALU,
+    input  wire [N_BITS-1:0]     i_dato_salida_MEM,
     //input  wire [N_BITS-1:0]     i_dato_salida_mem,
     //input  wire [N_REG_BITS-1:0] i_Alu_rt,
     //input  wire [N_REG_BITS-1:0] i_Mem_rt,
@@ -73,12 +76,13 @@ module instructionDecode#(
     output reg  [N_BITS-1:0] o_sign_extension,
     output reg  [N_BITS-1:0] o_shamt,
     
-    output wire [N_BITS-1:0] o_jump_direction,
+    output reg  [N_BITS-1:0] o_jump_direction,
 
     //output o_cpu_finished,
     
     output reg               o_halt,
     output wire              o_flush,
+    output reg               o_flush_mux,
     output wire              o_stall
 );
     wire              w_control_WB_memtoReg;
@@ -93,7 +97,11 @@ module instructionDecode#(
     wire [N_BITS-1:0] w_dato_leido1;
     wire [N_BITS-1:0] w_dato_leido2;
 
-    wire [N_BITS-1:0] jump_direction;
+    wire [N_BITS-1:0] w_dato_reg_forwarding_1;
+
+    wire [N_BITS-1:0] w_jump_direction_exten;
+
+    wire [N_BITS-1:0] w_jump_direction;
     
     //reg [N_REG_BITS-1:0] w_rd_or_rt;
     //reg              i_oEnable;
@@ -101,6 +109,7 @@ module instructionDecode#(
     reg [N_BITS-1:0] dato_a_escribir;
     
     wire              control_EX_regDst;
+    wire              w_flush;
     
     //reg i_ReadEnable;
     
@@ -187,10 +196,10 @@ module instructionDecode#(
         .i_sign_extension2  (i_instruccion[11:7]),
         .i_sign_extension3  (i_instruccion[19:12]),
         .i_opcode           (i_instruccion[6:0]),
-        .i_rs1              (w_dato_leido1),
+        .i_rs1              (w_dato_reg_forwarding_1),
         .i_pc               (i_pc_4),
         
-        .o_jump_direction (jump_direction),
+        .o_jump_direction (w_jump_direction_exten),
         .o_sign_extension (w_sign_extension)
     );
     
@@ -201,7 +210,7 @@ module instructionDecode#(
         .i_branch                       (w_control_M_branch),
         .i_rs1                          (i_instruccion[19:15]),
         .i_rs2                          (i_instruccion[24:20]),
-        .i_jump_direction               (jump_direction),
+        .i_jump_direction               (w_jump_direction_exten),
         .i_PC                           (i_pc_4),
         .i_dato_leido_1                 (w_dato_leido1),
         .i_dato_leido_2                 (w_dato_leido2),
@@ -214,21 +223,25 @@ module instructionDecode#(
         .i_control_M_memRead_ID_EX      (i_control_M_memRead_ID_EX),
         
         .i_EX_MEM_rt                    (i_EX_MEM_rt),
+        .i_MEM_WB_rt                    (i_MEM_WB_rt),
         .i_control_M_memRead_EX_MEM     (i_control_M_memRead_EX_MEM),
         .i_control_WB_regWrite_EX_MEM   (i_control_WB_regWrite_EX_MEM),
+        .i_control_WB_regWrite_MEM_WB   (i_control_WB_regWrite_MEM_WB),
         
         //.i_Alu_rt                       (i_Alu_rt),
         //.i_Mem_rt                       (i_Mem_rt),
         
         .i_dato_salida_ALU              (i_dato_salida_ALU),
-        //.i_dato_salida_mem              (i_dato_salida_mem),
+        .i_dato_salida_MEM              (i_dato_salida_MEM),
+        //.i_dato_salida_mem            (i_dato_salida_mem),
         
         
-        .o_flush                        (o_flush),
+        .o_dato_reg_forwarding_1        (w_dato_reg_forwarding_1),
+        .o_flush                        (w_flush),
         .o_stall                        (o_stall),
-        .o_jump_direction               (o_jump_direction)
+        .o_jump_direction               (w_jump_direction)
     );
-    
+    assign o_flush = w_flush;
     always @(posedge i_clk) begin: ID_EX
         if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))begin
             if(o_flush || o_stall)
@@ -260,9 +273,11 @@ module instructionDecode#(
             o_rs1                   <= i_instruccion[19:15];
             o_rs2                   <= i_instruccion[24:20];
             //o_rd_or_rt              <= w_rd_or_rt;
+            o_jump_direction        <= w_jump_direction;
 
             o_rd                    <= i_instruccion[11:7];
             o_halt                  <= i_halt;
+            o_flush_mux             <= w_flush;
         end    
     end
 endmodule

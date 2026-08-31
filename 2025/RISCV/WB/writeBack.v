@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 module writeBack #(
    parameter N_BITS = 32,
@@ -27,10 +27,11 @@ module writeBack #(
    
    output reg o_cpu_finished,
 
-   output reg [N_BITS-1:0] o_WB_writeData, //salida del multiplexor
-   output reg [N_BITS_REG-1:0] o_rd, // reg a escribir en la etapa ID
+   output reg  [N_BITS-1:0] o_WB_writeData, //salida del multiplexor
+   output wire [N_BITS-1:0] o_WB_writeData_forwarding,
+   output reg  [N_BITS_REG-1:0] o_rd, // reg a escribir en la etapa ID
    //output reg [N_BITS_REG-1:0] o_rd_MEM_WB, // para el cortocircuito de la etapa EX
-   output reg o_WB_regWrite //se�al de escritura en etapa ID
+   output reg  o_WB_regWrite //se�al de escritura en etapa ID
 
 );
 
@@ -40,14 +41,14 @@ module writeBack #(
    // Multiplexor for MemToReg signal:
    always @(*) begin
       case(i_memToReg)
-         1'b0: w_WB_writeData <= i_AluResult;
-         1'b1: w_WB_writeData <= i_datoLeido_MEM;
+         1'b0: w_WB_writeData = i_AluResult;
+         1'b1: w_WB_writeData = i_datoLeido_MEM;
       endcase
    end//end_always
    
    //--------------------------------------------
    // Lectura y escritura: (update outputs)
-   always @(posedge i_clk) begin: ID_EX
+   always @(posedge i_clk) begin: WB_IF
 
       if(i_reset) begin       
          o_WB_writeData  <= 32'b0;
@@ -65,5 +66,6 @@ module writeBack #(
          o_cpu_finished  <= i_halt;       
       end    
    end
+   assign o_WB_writeData_forwarding = w_WB_writeData;
    
 endmodule

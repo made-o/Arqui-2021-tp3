@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 (* keep *)module mux_2_1 #(
     parameter NBITS = 32

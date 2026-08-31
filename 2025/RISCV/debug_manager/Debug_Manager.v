@@ -1,3 +1,4 @@
+`timescale 1ns / 100ps
 module debug_manager #(
     parameter N_BITS = 8,
     parameter N_BITS_INST = 32,

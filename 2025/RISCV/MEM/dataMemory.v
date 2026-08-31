@@ -1,3 +1,4 @@
+`timescale 1ns / 100ps
 module dataMemory #(
    // Parameters:
    parameter RAM_WIDTH = 32, // ancho de datos de la mem RAM
@@ -40,7 +41,7 @@ module dataMemory #(
       memoryArray[7]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0111;
       memoryArray[8]  <= 32'b0000_0000_0000_0000_0000_0000_0000_1000;
       memoryArray[9]  <= 32'b0000_0000_0000_0000_0000_0000_0000_1001;
-      memoryArray[10] <= 32'b0000_0000_0000_0000_0000_0000_0000_1010;
+      memoryArray[10] <= 32'b0000_0000_0000_0000_0000_0000_0000_0101;
    end
    //---------------------------------------------------
 

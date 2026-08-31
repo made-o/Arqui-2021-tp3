@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 (* keep *)module pc #(
     parameter NBITS = 32 //! Tamaño de las direcciones (32 bits)

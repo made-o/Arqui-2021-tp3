@@ -1,3 +1,4 @@
+`timescale 1ns / 100ps
 // Declaraci�n de c�digos de operacion:
 `define AND  6'b000000   // AND (bit-a-bit)
 `define OR   6'b000001   // OR (bit-a-bit)

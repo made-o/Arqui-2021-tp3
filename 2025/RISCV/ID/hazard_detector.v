@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 
 module hazard_detector#
 (
@@ -31,11 +31,15 @@ module hazard_detector#
 
     //Vienen de EX_MEM
     input  wire [N_BITS_REG-1:0] i_EX_MEM_rt,
+    input  wire [N_BITS_REG-1:0] i_MEM_WB_rt,
     input  wire                  i_control_M_memRead_EX_MEM,
     input  wire                  i_control_WB_regWrite_EX_MEM,
+    input  wire                  i_control_WB_regWrite_MEM_WB,
     input  wire [N_BITS-1:0]     i_dato_salida_ALU,
+    input  wire [N_BITS-1:0]     i_dato_salida_MEM,
     
     //output reg                   o_PCSrc,
+    output wire [N_BITS-1:0]      o_dato_reg_forwarding_1,
     output reg                   o_flush,
     output reg                   o_stall,
     output reg [N_BITS-1:0]      o_jump_direction
@@ -65,13 +69,13 @@ module hazard_detector#
         if (is_branch_condicional || is_jalr) begin: branch_data_hazard
 
             if (i_control_M_memRead_EX_MEM && 
-                     ((i_rs1 == i_EX_MEM_rt) || ((i_rs2 == i_EX_MEM_rt) && is_branch_condicional)) && 
+                     ((i_rs1 == i_EX_MEM_rt) || (((i_rs2 == i_EX_MEM_rt) && use_rs2) && is_branch_condicional)) && 
                      (i_EX_MEM_rt != 5'd0)) begin: type_Load_2_MEM
                 o_stall = 1;
             end
             
             else if (i_control_WB_regWrite_ID_EX && 
-                     ((i_rs1 == i_ID_EX_rt) || ((i_rs2 == i_ID_EX_rt) && is_branch_condicional)) && 
+                     ((i_rs1 == i_ID_EX_rt) || (((i_rs2 == i_ID_EX_rt) && use_rs2) && is_branch_condicional)) && 
                      (i_ID_EX_rt != 5'd0)) begin: type_R_EX
                 o_stall = 1;
             end
@@ -80,11 +84,17 @@ module hazard_detector#
     //WARNING: parece un forwardin pero le faltan condiciones
     always@(*)
     begin: mux_data1
-        if((i_rs1 == i_EX_MEM_rt && i_control_WB_regWrite_EX_MEM == 1) && 
-            (i_EX_MEM_rt != 5'd0) && use_rs1)
-            dato_comparacion_1 = i_dato_salida_ALU;
-        else
+        if((i_rs1 == i_EX_MEM_rt) && i_control_WB_regWrite_EX_MEM && 
+            (i_EX_MEM_rt != 5'd0) && use_rs1) begin
+                dato_comparacion_1 = i_dato_salida_ALU;
+            end
+        else if((i_rs1 == i_MEM_WB_rt) && i_control_WB_regWrite_MEM_WB && 
+                (i_MEM_WB_rt != 5'd0) && use_rs1) begin
+                dato_comparacion_1 = i_dato_salida_MEM;
+            end
+        else begin
             dato_comparacion_1 = i_dato_leido_1;
+        end
     end
     
     always@(*)
@@ -92,6 +102,11 @@ module hazard_detector#
         if((i_rs2 == i_EX_MEM_rt && i_control_WB_regWrite_EX_MEM == 1) && 
             (i_EX_MEM_rt != 5'd0) && use_rs2)
             dato_comparacion_2 = i_dato_salida_ALU;
+
+        else if((i_rs2 == i_MEM_WB_rt) && i_control_WB_regWrite_MEM_WB && 
+                (i_MEM_WB_rt != 5'd0) && use_rs2)
+            dato_comparacion_2 = i_dato_salida_MEM;
+
         else
             dato_comparacion_2 = i_dato_leido_2;
     end
@@ -120,5 +135,7 @@ module hazard_detector#
             end
         endcase
     end
+
+    assign o_dato_reg_forwarding_1 = dato_comparacion_1;
  
 endmodule
