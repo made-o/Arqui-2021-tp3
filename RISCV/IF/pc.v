@@ -62,8 +62,7 @@
       begin
         // Si enable está activo, el PC se actualiza con i_pc
         pc_current <= newPc;
-        if(!i_halt)
-          newPc <= i_pc;
+        newPc <= i_pc;
       end
     end
   end
