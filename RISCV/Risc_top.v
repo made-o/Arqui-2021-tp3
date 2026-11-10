@@ -292,7 +292,8 @@ module Risc_Top #(
         .i_instruccion(w_instruction_IF),
         .i_WB_data_to_write(w_WB_writeData_forwarding),
         .i_addr_a_escribir(w_rd_WB),
-        .i_pc_4(pc_out),
+        .i_pc_4(w_pc_UART),
+        //.i_pc_4(pc_out),
         
         // Interface para TX - usa addr_to_send del Debug Manager
         .i_addr_tx_ID(w_addr_to_send_ID),
