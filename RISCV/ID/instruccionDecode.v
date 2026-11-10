@@ -246,7 +246,7 @@ module instructionDecode#(
         .o_jump_direction               (w_jump_direction)
         //.o_jump_direction               (o_jump_direction)
     );
-    assign o_flush = w_flush;
+    assign o_flush = w_flush;// && !o_stall;
     always @(posedge i_clk) begin: ID_EX
         if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))begin
             if(o_stall)
@@ -283,7 +283,7 @@ module instructionDecode#(
             
             o_rd                    <= i_instruccion[11:7];
             o_halt                  <= i_halt;
-            o_pc_selec              <= w_flush;
+            o_pc_selec              <= w_flush;// && !o_stall;
         end    
     end
 endmodule
