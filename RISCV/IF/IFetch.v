@@ -65,7 +65,7 @@
        .i_stall(i_stall),       //! Señal de stall
        .i_inicializando (i_inicializando),
        //.i_pc(w_pc_jump),        //! Siguiente valor del PC (seleccionado por el mux)
-       .i_pc(w_pc_incremented),        //! Siguiente valor del PC (seleccionado por el mux)
+       .i_pc(halt_signal ? w_pc_jump : w_pc_incremented),        //! Siguiente valor del PC (seleccionado por el mux)
        
        .i_exec_mode(i_exec_mode),
        .i_step(i_step),
