@@ -46,9 +46,10 @@ module alu #(
          `XOR:  o_aluResult = i_datoA ^ i_datoB;
          `SUB:  o_aluResult = i_datoA - i_datoB;
 
-         `SLL:  o_aluResult = i_datoA << i_datoB;
-         `SRL:  o_aluResult = i_datoA >> i_datoB;
-         `SRA:  o_aluResult = $signed(i_datoA) >>> $signed(i_datoB);
+         // RV32I: solo los 5 bits menos significativos del operando B definen el desplazamiento
+         `SLL:  o_aluResult = i_datoA << i_datoB[4:0];
+         `SRL:  o_aluResult = i_datoA >> i_datoB[4:0];
+         `SRA:  o_aluResult = $signed(i_datoA) >>> i_datoB[4:0];
 
          `SLTU: o_aluResult = ($unsigned(i_datoA) < $unsigned(i_datoB))? 32'b1: 32'b0;
          
