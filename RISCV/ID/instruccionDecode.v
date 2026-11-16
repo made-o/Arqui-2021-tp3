@@ -246,8 +246,19 @@ module instructionDecode#(
         .o_jump_direction               (w_jump_direction)
         //.o_jump_direction               (o_jump_direction)
     );
-    assign o_flush = w_flush;// && !o_stall;
+    assign o_flush = w_flush && !o_stall;
     always @(posedge i_clk) begin: ID_EX
+        if (i_reset) begin
+            o_control_WB_memtoReg   <= 1'b0;
+            o_control_WB_regWrite   <= 1'b0;
+            o_control_M_branch      <= 2'b00;
+            o_control_M_memRead     <= 1'b0;
+            o_control_M_memWrite    <= 1'b0;
+            o_control_EX_ALUOp      <= 2'b00;
+            o_control_EX_ALUSrc     <= 2'b00;
+            o_halt                  <= 1'b0;
+            o_pc_selec              <= 2'b0;
+        end
         if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))begin
             if(o_stall)
             begin
@@ -283,7 +294,7 @@ module instructionDecode#(
             
             o_rd                    <= i_instruccion[11:7];
             o_halt                  <= i_halt;
-            o_pc_selec              <= w_flush;// && !o_stall;
+            o_pc_selec              <= w_flush && !o_stall;
         end    
     end
 endmodule

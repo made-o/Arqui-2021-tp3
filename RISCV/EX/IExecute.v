@@ -145,6 +145,7 @@ module IExecute #(
          o_mem_size <= 2'b0;
          //o_rs2 <= 6'b000000;
          o_regWrite  <= 1'b0;
+         o_halt <= 1'b0;
       end//end_if
       else begin
          if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))

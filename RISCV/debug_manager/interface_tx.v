@@ -462,7 +462,7 @@ module interface_tx
         
         case (current_state)
             IDLE: begin
-                if (i_halt || (i_exec_mode && i_send_start)) begin
+                if (i_send_start) begin// || (i_exec_mode && i_send_start)) begin
                     next_state = IF_INIT;
                 end
             end

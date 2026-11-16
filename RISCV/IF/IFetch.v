@@ -125,6 +125,9 @@
 
   always @(posedge i_clk) begin: FD_ID
     //w_jump_select <= i_flush;
+    if (i_reset) begin
+      o_halt_signal <= 1'b0;
+    end
     if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)) && !i_stall)
     begin
       o_halt_signal  <= halt_signal;

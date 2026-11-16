@@ -137,5 +137,4 @@ module regMemory #(
     assign o_data1 = memBlock[i_reg_lectura1];
     assign o_data2 = memBlock[i_reg_lectura2];
     
-    
 endmodule

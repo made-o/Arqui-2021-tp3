@@ -103,12 +103,13 @@ module memory #(
    always @(posedge i_clk) begin: ID_EX
 
       if(i_reset) begin
-         o_readData        <= {N_BITS{1'b0}};
-         //o_rd_MEM          <= {N_BITS_REG{1'b0}};
-         o_rd        <= {N_BITS_REG{1'b0}};
-         o_memToReg_MEM_WB <= 1'b0;
-         o_regWrite_MEM_WB <= 1'b0;
-         o_aluResult         <= {N_BITS{1'b0}};
+         o_readData           <= {N_BITS{1'b0}};
+         //o_rd_MEM           <= {N_BITS_REG{1'b0}};
+         o_rd                 <= {N_BITS_REG{1'b0}};
+         o_memToReg_MEM_WB    <= 1'b0;
+         o_regWrite_MEM_WB    <= 1'b0;
+         o_aluResult          <= {N_BITS{1'b0}};
+         o_halt               <= 1'b0;
       end
       else if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))begin
          // datos de 32 bits
