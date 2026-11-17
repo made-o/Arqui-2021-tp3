@@ -16,7 +16,6 @@ module Risc_Top #(
 
     output wire o_tx_A18,         // Línea de datos TX (hacia PC)
     output wire [N_BITS-1:0] o_rx_data,
-    //output wire [2:0] o_led_state,  // Indicador de Estado (opcional)
     output [3:0] o_an,
     output [6:0] o_seg_bus,
     output [N_BITS-1: 0]o_instruction_8
@@ -45,19 +44,16 @@ module Risc_Top #(
     wire w_inst_write_en;
     wire [N_BITS_REG - 1:0] w_inst_addr_carga; // ADDR_WIDTH = 5 (según I_Fetch.v)
     wire [N_BITS_INST - 1:0] w_inst_data_carga; // NBITS = 32 (según I_Fetch.v)
-    //wire [N_BITS_INST-1:0] w_pc_current;
 
     // Deco <--> Debug Manager (Datos del procesador)
     (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_D_reg_to_send; // Registro leída de la memoria (para TX/Debug)
     (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_MEM_mem_to_send; // Registro leída de la memoria (para TX/Debug)
-    //(*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_MEM_data_mem_send;
     (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_dato_leido1;
     (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_dato_leido2;
     
     (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_REG-1 : 0] w_rs1_id;
     (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_REG-1 : 0] w_rs2_id;
-    //(*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_REG-1 : 0] w_rt_OR_rd_ID;
-
+    
     //---- creo que no lo necesito ----
     (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_REG-1 : 0] w_rd_id; 
     wire w_ceroSignal;
@@ -93,7 +89,6 @@ module Risc_Top #(
     
     
     // aun no se usan
-    //wire [N_BITS_INST-1: 0] i_jump_address;
     (*KEEP = "true", MARK_DEBUG = "true" *) wire [N_BITS_INST-1: 0] w_instruction_IF;
     (*KEEP = "true", MARK_DEBUG = "true" *) wire [N_BITS_INST-1: 0] w_instruction_ID;
     (*KEEP = "true", MARK_DEBUG = "true" *) wire [N_BITS_INST-1: 0] w_instruction_EX;
@@ -120,7 +115,6 @@ module Risc_Top #(
     wire [N_BITS_INST-1:0] w_WB_writeData;
     wire [N_BITS_INST-1:0] w_WB_writeData_forwarding;
     wire [N_BITS_REG-1:0]  w_rd_WB; 
-    //wire [N_BITS_REG-1:0]  w_rd_WB; 
     wire                   w_WB_regWrite;
 
     // --- 3. Lógica de Reset Sincronizado y Estabilidad ---
@@ -204,14 +198,12 @@ module Risc_Top #(
         .i_MEM_data_mem_send(w_MEM_mem_to_send),
         .i_MEM_readDataMEM(w_readData),
         .i_MEM_aluResult(w_aluResult_MEM),
-        //.i_MEM_rd_data(w_rd_data_MEM),
         .i_MEM_rt_OR_rd(w_rd_MEM),
         .i_MEM_control_bits(w_control_bits_MEM),
         
         // Datos provenientes de WB
         .i_WB_writeData(w_WB_writeData), 
         .i_rd_WB(w_rd_WB), 
-        //.i_rd_WB(w_rd_WB), 
         .i_WB_regWrite(w_WB_regWrite),
         
         .i_halt_risc(w_cpu_finished),
@@ -231,8 +223,6 @@ module Risc_Top #(
         .o_addr_to_send_ID(w_addr_to_send_ID),//
         .o_addr_to_send_MEM(w_addr_to_send_MEM),//
 
-        //.o_done(o_done),
-        
         .o_inicializando(w_inicializando),
         
         .o_state (w_led_state)//
@@ -246,11 +236,9 @@ module Risc_Top #(
         .i_clk(w_clk_50MHz),
         .i_reset(r_reset_system),
         .i_enable(!w_inicializando),  // Habilito pc y la memoria luego de la carga de la memoria(es redundante)
-        //.i_halt(w_fetch_halt),
         .i_stall(w_stall),
         .i_inicializando(w_inicializando), // ver bien como usar este flag, se usa en el modulo pc
         .i_jump_address(w_jump_direction),
-        //.i_jump_select(w_flush),
         .i_flush(w_flush),
         .i_pc_selec(w_pc_selec),
         
@@ -258,9 +246,6 @@ module Risc_Top #(
         .i_WriteEnable(w_inst_write_en),
         .i_addr_carga(w_inst_addr_carga),
         .i_data_carga(w_inst_data_carga),
-        
-        // Interface para TX - usa addr_to_send del Debug Manager
-        //.i_addr_tx(),
         
         // Control de ejecución
         .i_exec_mode(w_exec_mode),
@@ -270,7 +255,6 @@ module Risc_Top #(
         .o_instruction(w_instruction_IF),
         .o_data_send_tx(),
         .o_halt_signal(w_halt_IF),
-        //.o_pc_current(w_pc_current),
         .o_pc_UART(w_pc_UART),
         .o_pc(pc_out)
     );
@@ -293,13 +277,11 @@ module Risc_Top #(
         .i_WB_data_to_write(w_WB_writeData_forwarding),
         .i_addr_a_escribir(w_rd_WB),
         .i_pc_4(w_pc_UART),
-        //.i_pc_4(pc_out),
         
         // Interface para TX - usa addr_to_send del Debug Manager
         .i_addr_tx_ID(w_addr_to_send_ID),
         
         .i_ID_EX_rt(w_rd_id),
-        //.i_ID_EX_MemRead({5{1'b0}}),
        
         .i_regWrite(w_WB_regWrite),
         
@@ -312,9 +294,6 @@ module Risc_Top #(
         .i_control_WB_regWrite_MEM_WB(w_control_bits_MEM[1]),
         .i_dato_salida_ALU(w_aluResult_EX),
         .i_dato_salida_MEM(w_WB_writeData_forwarding),
-        //.i_dato_salida_mem(),
-        //.i_Alu_rt(),
-        //.i_Mem_rt(),
 
         .o_instruccion(w_instruction_ID),
 
@@ -325,10 +304,8 @@ module Risc_Top #(
         .o_dato_leido2(w_dato_leido2),
         .o_rs1(w_rs1_id),
         .o_rs2(w_rs2_id),
-        //.o_rd_or_rt(w_rt_OR_rd_ID),
 
         .o_rd(w_rd_id),
-        //.o_dato_ex_signo(),
 
         .o_control_EX_ALUSrc(w_control_bits_ID[1:0]),
         .o_control_EX_ALUOp(w_control_bits_ID[3:2]),
@@ -337,21 +314,11 @@ module Risc_Top #(
         .o_control_M_memWrite(w_control_bits_ID[7]),
         .o_control_WB_memtoReg(w_control_bits_ID[8]),
         .o_control_WB_regWrite(w_control_bits_ID[9]),
-        /*Salidas del EX para comparar
-        .o_branch(w_control_bits_EX[1:0]), //2bits
-        .o_memRead(w_control_bits_EX[2]), //1bits
-        .o_memToReg(w_control_bits_EX[3]), //1bits
-        .o_memWrite(w_control_bits_EX[4]), //1bits
-        .o_regWrite(w_control_bits_EX[5]), //1bits
-        .o_ceroSignal(w_control_bits_EX[6]) //1bits
-        */
         .o_sign_extension(w_sign_extension),
         .o_shamt(w_shamt),
         
         .o_jump_direction(w_jump_direction),
         .o_pc_plus_1(w_pc_plus_1),
-
-        //.o_cpu_finished(w_cpu_finished),
 
         .o_halt(w_halt_ID),
         
@@ -415,9 +382,6 @@ module Risc_Top #(
         .o_rd_data(w_rd_data_EX), //5bits
         .o_mem_size(w_mem_size),
         .o_meme_unsigned(w_meme_unsigned), 
-        //.o_rs2(w_rs2_EX), //5bits 
-        //.o_regWrite_EX_MEM(w_regWrite_EX_MEM), 
-        //.o_regWrite_MEM_WB(w_regWrite_MEM_WB),
         .o_branch(w_control_bits_EX[1:0]), //2bits //Puede que no lo use mas que en ID
         .o_memRead(w_control_bits_EX[2]), //1bits
         .o_memWrite(w_control_bits_EX[3]), //1bits
@@ -446,8 +410,7 @@ module Risc_Top #(
         .i_aluResult(w_aluResult_EX), // retorna para la etapa EX - (i_memData)
         .i_datoLeido2(w_datoLeido2_EX), 
         .i_rd(w_rd_data_EX),
-        //.i_rd_EX_MEM(w_rd_data_EX), // retorna para la etapa EX - bloque forwarding
-
+        
         .i_exec_mode(w_exec_mode),
         .i_step(w_step),
 
@@ -490,7 +453,6 @@ module Risc_Top #(
         
         //entradas que directamente salen:
         .i_regWrite(w_control_bits_MEM[1]), //habilita la escritura en la etapa ID
-        //.i_rd_MemToWb(w_rd_data_MEM),  //cortocircuito etapa EX
         .i_rd(w_rd_MEM), //registro a escribir en etapa ID
         
         
@@ -499,7 +461,6 @@ module Risc_Top #(
         .o_WB_writeData(w_WB_writeData), //salida del multiplexor
         .o_WB_writeData_forwarding(w_WB_writeData_forwarding), //Salida para forwarding antes del latch WB_IF
         .o_rd(w_rd_WB), // reg a escribir en la etapa ID y el cortocircuito
-        //.o_rd_MEM_WB(w_rd_WB), // para el cortocircuito de la etapa EX
         .o_WB_regWrite(w_WB_regWrite) //se�al de escritura en etapa ID
     );
 
@@ -511,7 +472,6 @@ module Risc_Top #(
     
     ila_0 ILA_Debug (
         .clk(w_clk_50MHz), // input wire clk
-    
     
         .probe0(pc_out), // input wire [31:0]  probe0  
         .probe1(w_instruction_IF), // input wire [31:0]  probe1

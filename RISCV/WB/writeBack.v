@@ -21,7 +21,6 @@ module writeBack #(
    
    //entradas que directamente salen:
    input  i_regWrite, //habilita la escritura en la etapa ID
-   //input  [N_BITS_REG-1:0] i_rd_MemToWb,  //cortocircuito etapa EX
    input  [N_BITS_REG-1:0] i_rd, //registro a escribir en etapa ID
    
    
@@ -30,7 +29,6 @@ module writeBack #(
    output reg  [N_BITS-1:0]      o_WB_writeData, //salida del multiplexor
    output wire [N_BITS-1:0]      o_WB_writeData_forwarding,
    output wire [N_BITS_REG-1:0]  o_rd, // reg a escribir en la etapa ID
-   //output reg [N_BITS_REG-1:0] o_rd_MEM_WB, // para el cortocircuito de la etapa EX
    output wire                   o_WB_regWrite //se�al de escritura en etapa ID
 
 );
@@ -52,16 +50,10 @@ module writeBack #(
 
       if(i_reset) begin       
          o_WB_writeData  <= 32'b0;
-         //o_rd            <= 1'b0;
-         //o_rd_MEM_WB     <= 1'b0;
-         //o_WB_regWrite   <= 1'b0;
          o_cpu_finished  <= 1'b0; 
       end
       else if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))begin 
          o_WB_writeData  <= w_WB_writeData;
-         //o_rd            <= i_rd;
-         //o_rd_MEM_WB     <= i_rd;
-         //o_WB_regWrite   <= i_regWrite;
          o_cpu_finished  <= i_halt;       
       end    
    end

@@ -6,8 +6,6 @@ module dataMemory #(
    parameter FILE_DATA = "/home/nikaro/Documents/Arqui2025Nikaro/Riscv_IF_ID_EX_MEM_WB/memory/memData.mem" //"../memory/memData.mem"
 )
 (  // Inputs & Outputs:
-   //localparam ADDR_WIDTH = $clog2(RAM_DEPTH),
-   //input  i_valid,
    input  i_clk,  // clock
    input  i_read_enable, //memRead
    input  i_write_enable, //memWrite
@@ -39,21 +37,6 @@ module dataMemory #(
          $readmemb(FILE_DATA, memoryArray, 0, RAM_DEPTH-1);
       end
    end
-   /*
-   initial begin
-      memoryArray[0]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0000; // Data 0
-      memoryArray[1]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0001;
-      memoryArray[2]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0010;
-      memoryArray[3]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0011;
-      memoryArray[4]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0100;
-      memoryArray[5]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0101;
-      memoryArray[6]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0110;
-      memoryArray[7]  <= 32'b0000_0000_0000_0000_0000_0000_0000_0111;
-      memoryArray[8]  <= 32'b0000_0000_0000_0000_0000_0000_0000_1000;
-      memoryArray[9]  <= 32'b0000_0000_0000_0000_0000_0000_0000_1001;
-      memoryArray[10] <= 32'b0000_0000_0000_0000_0000_0000_0000_0101;
-   end*/
-   //---------------------------------------------------
 
    // ESCRITURA: (write data to the specified address)
    always @(posedge i_clk) begin: escritura
@@ -155,7 +138,7 @@ module dataMemory #(
          end
       endcase
    end
-   //assign o_read_data = i_read_enable ? memoryArray[i_address] : 32'h0;
+   
    assign o_read_data = w_read_data;
    
 endmodule

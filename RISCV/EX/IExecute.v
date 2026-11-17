@@ -34,7 +34,6 @@ module IExecute #(
    input [N_BITS_REG-1:0] i_rd_MEM_WB, //6-bits
    input i_regWrite_EX_MEM,
    input i_regWrite_MEM_WB,
-   //input [N_BITS_REG-1:0] i_rs_id,     //6-bits
    
    // Se�ales que vienen de las etapas WB y MEM (para usar en MUX)
    input [N_BITS-1:0] i_wbData,
@@ -55,9 +54,6 @@ module IExecute #(
    output reg [N_BITS_REG-1:0] o_rd_data, //5-bits
    output reg [2-1:0] o_mem_size,
    output reg o_meme_unsigned, 
-   //output reg [N_BITS_REG-1:0] o_rs2,
-   //output reg o_regWrite_EX_MEM,
-   //output reg o_regWrite_MEM_WB,
    output reg [1:0] o_branch,
    output reg o_memRead,
    output reg o_memWrite,
@@ -122,12 +118,6 @@ module IExecute #(
       endcase
    end//end_always
    
-   
-   // Asigno a la salida:
-   //assign o_datoLeido2 = dato2_preALU; //dato que se quiere guardar en MEM
-   //assign o_rd_data  = i_rd_id; //direccion de la MEM en donde se guarda el dato
-   //assign o_rt_OR_rd = i_rt_OR_rd; //direccion pero de la memoria de registros que se va a usar en Wb
-   
    //---------------------------------------------------
    always@(posedge i_clk) begin: EX_MEM
       if(i_reset) begin
@@ -163,10 +153,7 @@ module IExecute #(
                o_rd_data      <= i_rd_id;//Registro que se usa en wb para guradar en la memoria de registros  
                o_meme_unsigned <= i_instruccion[14];
                o_mem_size     <= i_instruccion[13:12];
-               //o_regWrite_EX_MEM <= i_regWrite_EX_MEM;
-               //o_regWrite_MEM_WB <= i_regWrite_MEM_WB;
-               //o_rs2        <= i_rs2_id;//direccion pero de la memoria de registros que se va a usar en Wb
-
+               
             //Generados en esta etapa
                o_aluResult    <= w_aluResult;
                o_ceroSignal   <= w_ceroSignal;
@@ -215,7 +202,5 @@ module IExecute #(
       .o_forwardA(w_forwardA),
       .o_forwardB(w_forwardB)
    );
-   
-   
    
 endmodule

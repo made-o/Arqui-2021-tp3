@@ -70,7 +70,7 @@ module debug_manager #(
 
     output o_inicializando,
 
-    output [2:0] o_state             // Ampliado a 3 bits
+    output [2:0] o_state  
 );
 
     //==========================================================================
@@ -98,7 +98,6 @@ module debug_manager #(
 
     reg w_send_started;
 
-    //reg [1:0] halt_step_count; // Contador para los 3 ciclos extra
     reg halt_has_come;
     
     reg inicializando;
@@ -128,7 +127,6 @@ module debug_manager #(
         .i_EX_aluResult(i_EX_aluResult),
         .i_EX_datoLeido2(i_EX_datoLeido2),
         .i_EX_rd_data_EX(i_EX_rd_data_EX),
-        //.i_EX_rt_OR_rd_EX(i_EX_rt_OR_rd_EX),
         .i_EX_control_bits_EX(i_EX_control_bits_EX),
         .i_EX_ceroSignal(i_EX_ceroSignal),
         
@@ -136,14 +134,12 @@ module debug_manager #(
         .i_MEM_data_mem_send(i_MEM_data_mem_send),
         .i_MEM_aluResult(i_MEM_aluResult),
         .i_MEM_readDataMEM(i_MEM_readDataMEM),
-        //.i_MEM_rd_data(i_MEM_rd_data),
         .i_MEM_rt_OR_rd(i_MEM_rt_OR_rd),
         .i_MEM_control_bits(i_MEM_control_bits),
 
         // Etapa WB
         .i_WB_writeData(i_WB_writeData), 
         .i_rd(i_rd_WB), 
-        //.i_rd_MEM_WB(i_rd_WB), 
         .i_WB_regWrite(i_WB_regWrite), 
 
         .i_halt(1'b0), 
@@ -190,16 +186,12 @@ module debug_manager #(
                     byte_counter <= 3'd0;
                     current_addr <= {N_BITS_REG{1'b0}};
                     w_send_started <= 1'b0;
-                    //o_addr_to_send <= {N_BITS_REG{1'b0}};
                     o_exec_mode <= 1'b0;
                     o_step <= 1'b0;
                     o_write_enable <= 1'b0;
                     halt_detected <= 1'b0;
-
-                    //halt_step_count <= 2'd0;
                     halt_has_come <= 1'b0;
                     inicializando <= 1'b1;
-                    //instruction_count <= {N_BITS_REG{1'b0}};
                 end
 
                 WAIT_CMD: begin
@@ -251,11 +243,6 @@ module debug_manager #(
                         halt_has_come <= 1'b1;
                     end
                     w_send_started <= 1'b0;
-                    /*
-                    if (halt_has_come) begin
-                        halt_step_count <= halt_step_count + 1'b1;
-                    end
-                    */
                 end
                 
                 SEND_START: begin
@@ -283,7 +270,6 @@ module debug_manager #(
 
             IDLE: begin
                 if (i_flag_edge) begin
-                    //next_state = WAIT_CMD;
                     next_state = REC;
                 end
             end
@@ -328,8 +314,6 @@ module debug_manager #(
                     end
                 end
             end
-
-            //default: next_state = IDLE;
         endcase
     end
     

@@ -19,33 +19,6 @@
 
   reg [NBITS-1:0] newPc; //! Registro auxiliar
   reg [NBITS-1:0] pc_current; //! Registro auxiliar
-  //reg [NBITS-1:0] new_pc;
-
-
-  //! Update pc with the new PC value:
-  //  always @(posedge i_clk or negedge i_reset)
-  //  begin : assignPC
-  //    if (!i_reset) //Reset se activa por bajo (cuando reset=0)
-  //    begin
-  //      // Si hay reset, el PC se reinicia a 0
-  //      newPc <= {NBITS{1'b0}};
-  //    end
-  //    else if (i_halt)
-  //    begin
-  //      // Si se activa halt, el PC no cambia, se mantiene el valor actual
-  //      newPc <= o_new_pc;
-  //    end
-  //    else if (i_stall)
-  //    begin
-  //      // Si hay stall, el PC tampoco debe cambiar
-  //      newPc <= o_new_pc;
-  //    end
-  //    else if (i_enable)
-  //    begin
-  //      // Si enable está activo, el PC se actualiza con i_pc
-  //      newPc <= i_pc;
-  //    end
-  //  end
 
   always @(posedge i_clk)
   begin : assignPC
@@ -68,7 +41,7 @@
   end
 
   //! Asigno la salida elegida:
-  assign o_new_pc = newPc;// i_reset ? {NBITS{1'b0}} : i_pc;
+  assign o_new_pc = newPc;
   assign o_pc_current = pc_current;
 
 endmodule

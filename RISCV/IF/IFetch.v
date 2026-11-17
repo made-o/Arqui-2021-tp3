@@ -7,15 +7,11 @@
     input  i_clk,         //! Clock
     input  i_reset,       //! Reset
     input  i_enable,      //! Enable
-    //input  i_halt,        //! Señal para detener el PC
     input  i_stall,       //! Señal para pausar el PC
     input  i_inicializando,
     input  [NBITS-1:0] i_jump_address,  //! Dirección de salto en caso de branch/jump
     input              i_flush,  //! Dirección de salto en caso de branch/jump
     input              i_pc_selec,  //! Dirección de salto en caso de branch/jump
-    //input  i_jump_select, //! Selección de salto (branch/jump select)
-    
-    //input [ADDR_WIDTH-1:0] i_addr_tx,
     
     input i_WriteEnable,
     input [ADDR_WIDTH-1:0] i_addr_carga,
@@ -24,14 +20,11 @@
     input  i_exec_mode,
     input  i_step,
     
-    //output reg [NBITS-1:0] o_instruction, //! Instrucción de la memoria de instrucciones
     output [NBITS-1:0] o_instruction, //! Instrucción de la memoria de instrucciones
     output [NBITS-1:0] o_data_send_tx,
     output reg o_halt_signal,              //! Señal de halt si se encuentra una instrucción HALT
-    //output [NBITS-1:0] o_pc_current,   //! Valor actual del PC
     output reg [NBITS-1:0] o_pc_UART,
     output [NBITS-1:0] o_pc
-    //output reg [NBITS-1:0] o_pc
   );
 
   //! Señales internas:
@@ -48,13 +41,6 @@
 
   wire [NBITS-1:0] w_pc_to_register;
 
-  //assign w_pc_to_register = (i_reset | i_inicializando) ? {NBITS{1'b0}} : w_pc_jump;
-
-  //always @(posedge i_clk)
-  //begin
-   // if(i_reset)
-   //   w_pc_current <=  {NBITS{1'b0}};
-  //dsdend
   //! Instancia del PC
 (* keep = "true" *)  pc #(.NBITS(NBITS))
      program_counter (
@@ -64,8 +50,7 @@
        .i_halt(halt_signal),         //! Señal de halt
        .i_stall(i_stall),       //! Señal de stall
        .i_inicializando (i_inicializando),
-       //.i_pc(w_pc_jump),        //! Siguiente valor del PC (seleccionado por el mux)
-       .i_pc(halt_signal ? w_pc_jump : w_pc_incremented),        //! Siguiente valor del PC (seleccionado por el mux)
+        .i_pc(halt_signal ? w_pc_jump : w_pc_incremented),        //! Siguiente valor del PC (seleccionado por el mux)
        
        .i_exec_mode(i_exec_mode),
        .i_step(i_step),
@@ -73,14 +58,12 @@
        .o_new_pc(w_pc_next),      //! Valor actual del PC
        .o_pc_current(w_pc_current)
      );
-  //assign w_pc_next = w_pc_current;
+  
   //! Instancia del sumador
  (* keep = "true" *) adder #(.NBITS(NBITS))
         pc_adder (
-          //.i_pc(w_pc_next),
           .i_pc(w_pc_jump),
           .i_reset(i_reset),
-          //.i_enable(i_enable),
           
           .o_pc_next(w_pc_incremented) //! PC incrementado en 1
         );
@@ -88,10 +71,8 @@
   //! Instancia del multiplexor
 (* keep = "true" *)  mux_2_1 #(.NBITS(NBITS))
           pc_mux (
-            //.i_A(w_pc_incremented),   //! Valor incrementado
             .i_A(w_pc_next),   //! Valor incrementado
             .i_B(i_jump_address),     //! Dirección de salto
-            //.select(i_flush_mux),   //! Selección de la entrada
             .select(i_pc_selec),   //! Selección de la entrada
             .o_out(w_pc_jump)         //! Salida del mux
           );
@@ -101,10 +82,8 @@
                   instr_mem (
                     .i_clk(i_clk),
                     .i_valid(i_enable),
-                    //.i_address(w_pc_next[4:0]),    //! Dirección del PC
                     .i_address(w_pc_jump[4:0]),    //! Dirección del PC
                     
-                    //.i_addr_tx(i_addr_tx), // Direccion de la memoria que se quiere enviar por uart
                     .i_WriteEnable(i_WriteEnable),
                     .i_addr_carga(i_addr_carga),
                     .i_data_carga(i_data_carga),
@@ -119,20 +98,15 @@
                     .o_haltSignal(halt_signal) //! Señal HALT si se detecta una instrucción HALT
                   );
   assign o_pc = w_pc_current;
-  //assign o_pc = w_pc_jump;
   assign o_instruction = w_instruction;
-  //assign o_pc_current = w_pc_current;
 
   always @(posedge i_clk) begin: FD_ID
-    //w_jump_select <= i_flush;
     if (i_reset) begin
       o_halt_signal <= 1'b0;
     end
     if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)) && !i_stall)
     begin
       o_halt_signal  <= halt_signal;
-      //o_instruction <= w_instruction;
-      //o_pc <= w_pc_current;
       o_pc_UART <= w_pc_jump;
     end
   end

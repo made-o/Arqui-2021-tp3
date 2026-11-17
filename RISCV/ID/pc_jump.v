@@ -64,25 +64,5 @@ module pc_jump#
             end
         endcase
     end
-    /*
-    always @(*) begin: jump_direction
-        o_jump_direction = 32'b0;
-        case(opcode)
-        Tipo_Jarl:
-        begin
-            o_jump_direction = {(rs1 + {{20{i_sign_extension1[11]}},i_sign_extension1})[31:1], 1'b0};
-        end
-        Tipo_B:
-        begin
-            o_jump_direction = pc + {{20{i_sign_extension1[11]}},i_sign_extension2[0],i_sign_extension1[10:5],i_sign_extension2[4:1], 0};
-        end
-        Tipo_Jal:
-        begin
-            o_jump_direction = pc + {{12{i_sign_extension1[11]}},i_sign_extension3,i_sign_extension1[0],i_sign_extension1[10:1],0};
-        end
-
-    end
-    */
-    //assign o_sign_extension = {{(N_BITS_W){i_sign_extension[15]}},i_sign_extension};
-    //assign o_jump_direction = pc + ({{(N_BITS_W){i_sign_extension[15]}},i_sign_extension}<<2);
+    
 endmodule
