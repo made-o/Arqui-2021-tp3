@@ -5,7 +5,7 @@ module regMemory #(
     parameter DATA_WIDTH = 32,   // Specify RAM data width
     parameter ADDR_WIDTH = 5,    // Specify Address width
     parameter RAM_DEPTH  = 1 << ADDR_WIDTH,  // 2^5 = 32
-    parameter FILE_DATA = "/home/nikaro/Documents/Arqui2025Nikaro/Riscv_IF_ID_EX_MEM_WB/memory/memReg.mem", //"../memory/memReg.mem",
+    parameter FILE_DATA = "../memory/memReg.mem",
     parameter P_REG_WIDTH  = 5 
 )
     //Input and outputs:
@@ -28,26 +28,20 @@ module regMemory #(
 
 );
     // Internal Variables:
-    reg [DATA_WIDTH-1:0] data_send_tx; //! Registro temporal que guarda la instrucción leída desde la memoria
-    // Variable to hold the registered read address:
-    reg [DATA_WIDTH-1:0] data1_out;
-    reg [DATA_WIDTH-1:0] data2_out;
+    reg [DATA_WIDTH-1:0] data_send_tx; //! Registro temporal que guarda el dato leída desde la memoria
     // Declare the RAM variable:
-    (* ram_style = "block" *) reg [DATA_WIDTH-1:0] memBlock [0:RAM_DEPTH-1];
-    reg oe_r;
+    reg [DATA_WIDTH-1:0] memBlock [0:RAM_DEPTH-1];
     
-    integer index;
     ////////////////////////////////////////////////////
     initial
     begin
-        if(FILE_DATA != 0)begin
+        if(FILE_DATA != "")begin
             $readmemb(FILE_DATA, memBlock, 0, RAM_DEPTH-1);
         end
     end
 
 
     // Memory Write Block:
-    // Write Operation: When i_w_Enable = 1 and i_r_Enable = 0
     always @(posedge i_clk) begin: memWrite
        if(i_WriteEnable && (i_regWrite_addr != 0)) begin 
           memBlock[i_regWrite_addr]  <= i_dato_a_escribir;
@@ -56,19 +50,17 @@ module regMemory #(
     
     always@(posedge i_clk)
       begin: send_data_uart
-        begin
-            data_send_tx <= memBlock[i_addr_tx];
-        end
+        data_send_tx <= memBlock[i_addr_tx];
       end
-    always @(posedge i_clk) begin
-        if (i_WriteEnable && i_regWrite_addr != 0)
-            $display("WRITE: x%0d <= %h", i_regWrite_addr, i_dato_a_escribir);
-    end
     
     assign o_data_send_tx = data_send_tx;
-    assign o_data1 = (i_WriteEnable && i_regWrite_addr != 0 && i_regWrite_addr == i_reg_lectura1)
-                 ? i_dato_a_escribir : memBlock[i_reg_lectura1];
-    assign o_data2 = (i_WriteEnable && i_regWrite_addr != 0 && i_regWrite_addr == i_reg_lectura2)
-                 ? i_dato_a_escribir : memBlock[i_reg_lectura2];
+    
+    assign o_data1 = (i_reg_lectura1 == {ADDR_WIDTH{1'b0}}) ? {DATA_WIDTH{1'b0}} :
+                 (i_WriteEnable && (i_regWrite_addr == i_reg_lectura1)) ? i_dato_a_escribir :
+                 memBlock[i_reg_lectura1];
+
+    assign o_data2 = (i_reg_lectura2 == {ADDR_WIDTH{1'b0}}) ? {DATA_WIDTH{1'b0}} :
+                 (i_WriteEnable && (i_regWrite_addr == i_reg_lectura2)) ? i_dato_a_escribir :
+                 memBlock[i_reg_lectura2];
     
 endmodule

@@ -50,7 +50,7 @@ module aluControl#(
       ////////////////////////////////////////
       2'b10: // R-Type
       begin
-         case({i_func3, i_func7}) // Se leen los datos de instruccion[6:0] -> FUNCT
+         case({i_func3, i_func7})
             10'b111_0000000: o_opcodeAlu = 6'b000000; // AND -> dato_A & dato_B
             10'b110_0000000: o_opcodeAlu = 6'b000001; // OR -> dato_A | dato_B
             10'b000_0000000: o_opcodeAlu = 6'b000010; // ADD -> (dato_A) + (dato_B)
@@ -69,7 +69,7 @@ module aluControl#(
       ////////////////////////////////////////
       2'b11: // I-Type
       begin
-         casex({i_func3, i_func7}) // Se leen los datos de instruccion[31:26] -> OP
+         casex({i_func3, i_func7})
             10'b000_xxxxxxx: o_opcodeAlu = 6'b000010; // ADDI -> dato_A + dato_B
             10'b111_xxxxxxx: o_opcodeAlu = 6'b000000; // ANDI -> dato_A & dato_B
             10'b110_xxxxxxx: o_opcodeAlu = 6'b000001; // ORI -> dato_A | dato_B

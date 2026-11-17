@@ -24,14 +24,14 @@ module IExecute #(
    input [N_BITS-1:0] i_shamt,
    input [N_BITS-1:0] i_pcPlus1,
    
-   input [N_BITS-1:0] i_instruccion, // 6-bits
+   input [N_BITS-1:0] i_instruccion, // 32-bits
    input [N_BITS_REG-1:0] i_rs1_id, // 5-bits
    input [N_BITS_REG-1:0] i_rs2_id, // 5-bits
    input [N_BITS_REG-1:0] i_rd_id, // 5-bits
    
    // Se�ales extras que entran a la unidad de cortocircuito:
-   input [N_BITS_REG-1:0] i_rd_EX_MEM, //6-bits
-   input [N_BITS_REG-1:0] i_rd_MEM_WB, //6-bits
+   input [N_BITS_REG-1:0] i_rd_EX_MEM, //5-bits
+   input [N_BITS_REG-1:0] i_rd_MEM_WB, //5-bits
    input i_regWrite_EX_MEM,
    input i_regWrite_MEM_WB,
    
@@ -75,15 +75,6 @@ module IExecute #(
    reg [N_BITS-1:0] dato2_preALU; // Dato que sale del MUX-forwardB
    wire [N_OPCODE-1:0] aluOpcode; // 6-bits que salen del bloque de control e ingresan a la ALU
    
-   // Se�ales referidas a la unidad de encaminamiento/cortocircuito:
-   reg memToReg;
-   reg regWrite_EX_MEM;
-   reg regWrite_MEM_WB;
-   reg branch;
-   reg memWrite;
-   reg memRead;
-   
-   
    ////////////////////////////////////////////////////
    // Start-code:
    
@@ -124,13 +115,13 @@ module IExecute #(
          o_memToReg <= 1'b0;
          //o_regWrite_EX_MEM <= 1'b0;
          //o_regWrite_MEM_WB <= 1'b0;
-         o_branch   <= 1'b0;
+         o_branch   <= 2'b0;
          o_memWrite <= 1'b0;
          o_memRead  <= 1'b0;
          o_aluResult <= 32'h00000000;
          o_ceroSignal <= 1'b0;
          o_datoLeido2 <= 32'h00000000;
-         o_rd_data <= 6'b000000;
+         o_rd_data <= 5'b00000;
          o_meme_unsigned <= 1'b0; 
          o_mem_size <= 2'b0;
          //o_rs2 <= 6'b000000;
@@ -172,7 +163,7 @@ module IExecute #(
       .i_func7(i_instruccion[31:25]), // 7bits
       .i_op(i_instruccion[6:0]), // 7bits
       
-      .o_opcodeAlu(aluOpcode) // 32bits
+      .o_opcodeAlu(aluOpcode) // 6bits
    );
 
    // Instanciacion de m�dulo de ALU:

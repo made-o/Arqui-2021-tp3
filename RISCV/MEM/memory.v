@@ -19,7 +19,7 @@ module memory #(
    input  i_regWrite,
    
    // Entradas que van a ser salidas directas a la sig. etapa
-   input  [N_BITS-1:0]     i_aluResult, // retorna para la etapa EX - (i_memData)
+   input  [N_BITS-1:0]     i_aluResult,
    input  [N_BITS-1:0]     i_datoLeido2, 
    input  [N_BITS_REG-1:0] i_rd,
    input                   i_exec_mode,
@@ -72,11 +72,10 @@ module memory #(
       .o_data_send_tx(o_data_send_tx_MEM)
    );
 
-   always @(posedge i_clk) begin: ID_EX
+   always @(posedge i_clk) begin: MEM/WB.
 
       if(i_reset) begin
          o_readData           <= {N_BITS{1'b0}};
-         //o_rd_MEM           <= {N_BITS_REG{1'b0}};
          o_rd                 <= {N_BITS_REG{1'b0}};
          o_memToReg_MEM_WB    <= 1'b0;
          o_regWrite_MEM_WB    <= 1'b0;

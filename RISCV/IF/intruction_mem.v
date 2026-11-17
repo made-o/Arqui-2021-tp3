@@ -2,9 +2,8 @@
 
 (* keep = "true" *)module instruction_mem #(
     parameter DATA_WIDTH = 32,  //! RAM ancho de datos
-    parameter DATA_DEPTH = 32, //! Direcciones de memoria (128 instrucciones)
-    parameter ADDR_WIDTH = 5,   //! Ancho del bus de direcciones → 2^5=32 (Calculado manualmente según DATA_DEPTH)
-    parameter FILE_DATA = "D:/FACULTAD/VivadoFiles/memIF.mem" //! archivo que contiene las instrucciones predefinidas
+    parameter DATA_DEPTH = 32, 
+    parameter ADDR_WIDTH = 5   //! Ancho del bus de direcciones → 2^5=32 (Calculado manualmente según DATA_DEPTH)  
   )
   (
     input  i_clk, //! Clock (100 Mhz)
@@ -22,14 +21,12 @@
 
     
     output wire [DATA_WIDTH-1:0] o_data, //! Instrucción leída de la memoria
-    output wire [DATA_WIDTH-1:0] o_data_send_tx,
-    output  o_haltSignal //!
+    output  o_haltSignal
   );
   //! Variables internas
-  (* ram_style = "block" *)reg [DATA_WIDTH-1:0] memBlock [DATA_DEPTH-1:0]; //! Array donde se almacenan las instrucciones
-  reg [DATA_WIDTH-1:0] ram_data = {DATA_WIDTH{1'b0}}; //! Registro temporal que guarda la instrucción leída desde la memoria
-  reg [DATA_WIDTH-1:0] data_send_tx = {DATA_WIDTH{1'b0}}; //! Registro temporal que guarda la instrucción leída desde la memoria
-  
+  reg [DATA_WIDTH-1:0] memBlock [DATA_DEPTH-1:0]; //! Array donde se almacenan las instrucciones
+  reg [DATA_WIDTH-1:0] ram_data = {DATA_WIDTH{1'b0}}; 
+
     initial
     begin
         memBlock[0] <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
@@ -72,7 +69,7 @@
   begin : lectura
     if(i_valid && !i_stall && (i_exec_mode == 1'b0 || (i_exec_mode && i_step)))
     begin
-      if((i_address >= DATA_DEPTH)) begin
+      if((i_address >= (DATA_DEPTH-1))) begin
         ram_data <= 32'hFFFFFFFF;
       end else begin
         ram_data <= memBlock[i_address];
@@ -92,10 +89,9 @@
   end
   
   //! Comprobar instrucción HALT
-  assign o_haltSignal = (((i_address >= DATA_DEPTH)||(memBlock[i_address] == 32'hFFFFFFFF)) && !i_flush);
+  assign o_haltSignal = (((i_address >= (DATA_DEPTH-1))||(memBlock[i_address] == 32'hFFFFFFFF)) && !i_flush);
   
   //! Asignación de la salida:
   assign o_data = ram_data;
-  assign o_data_send_tx = data_send_tx;
 
 endmodule

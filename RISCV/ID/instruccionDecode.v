@@ -95,10 +95,6 @@ module instructionDecode#(
 
     wire [N_BITS-1:0] w_jump_direction;
     
-    reg              i_WriteEnable;
-    reg [N_BITS-1:0] dato_a_escribir;
-    
-    wire              control_EX_regDst;
     wire              w_flush;
     
     regMemory 
@@ -203,43 +199,46 @@ module instructionDecode#(
             o_control_EX_ALUOp      <= 2'b00;
             o_control_EX_ALUSrc     <= 2'b00;
             o_halt                  <= 1'b0;
-            o_pc_selec              <= 2'b0;
+            o_pc_selec              <= 1'b0;
         end
-        if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))begin
+        else
+        begin
+            if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))begin
             if(o_stall)
-            begin
-                o_control_WB_memtoReg   <= 1'b0;
-                o_control_WB_regWrite   <= 1'b0;
-                o_control_M_branch      <= 2'b00;
-                o_control_M_memRead     <= 1'b0;
-                o_control_M_memWrite    <= 1'b0;
-                o_control_EX_ALUOp      <= 2'b00;
-                o_control_EX_ALUSrc     <= 2'b00;
-            end
-            else
-            begin
-                o_control_WB_memtoReg   <= w_control_WB_memtoReg;
-                o_control_WB_regWrite   <= w_control_WB_regWrite;
-                o_control_M_branch      <= w_control_M_branch;
-                o_control_M_memWrite    <= w_control_M_memWrite;
-                o_control_M_memRead     <= w_control_M_memRead;
-                o_control_EX_ALUSrc     <= w_control_EX_ALUSrc;
-                o_control_EX_ALUOp      <= w_control_EX_ALUOp;
-            end
+                begin
+                    o_control_WB_memtoReg   <= 1'b0;
+                    o_control_WB_regWrite   <= 1'b0;
+                    o_control_M_branch      <= 2'b00;
+                    o_control_M_memRead     <= 1'b0;
+                    o_control_M_memWrite    <= 1'b0;
+                    o_control_EX_ALUOp      <= 2'b00;
+                    o_control_EX_ALUSrc     <= 2'b00;
+                end
+                else
+                begin
+                    o_control_WB_memtoReg   <= w_control_WB_memtoReg;
+                    o_control_WB_regWrite   <= w_control_WB_regWrite;
+                    o_control_M_branch      <= w_control_M_branch;
+                    o_control_M_memWrite    <= w_control_M_memWrite;
+                    o_control_M_memRead     <= w_control_M_memRead;
+                    o_control_EX_ALUSrc     <= w_control_EX_ALUSrc;
+                    o_control_EX_ALUOp      <= w_control_EX_ALUOp;
+                end
 
-            o_dato_leido1           <= w_dato_leido1;
-            o_dato_leido2           <= w_dato_leido2;
-            o_instruccion           <= i_instruccion;
-            o_sign_extension        <= w_sign_extension;
-            o_shamt                 <= {27'b0, i_instruccion[24:20]};
-            o_rs1                   <= i_instruccion[19:15];
-            o_rs2                   <= i_instruccion[24:20];
-            o_jump_direction        <= w_jump_direction;
-            o_pc_plus_1             <= w_pc_plus_1;
-            
-            o_rd                    <= i_instruccion[11:7];
-            o_halt                  <= i_halt;
-            o_pc_selec              <= w_flush && !o_stall;
-        end    
+                o_dato_leido1           <= w_dato_leido1;
+                o_dato_leido2           <= w_dato_leido2;
+                o_instruccion           <= i_instruccion;
+                o_sign_extension        <= w_sign_extension;
+                o_shamt                 <= {27'b0, i_instruccion[24:20]};
+                o_rs1                   <= i_instruccion[19:15];
+                o_rs2                   <= i_instruccion[24:20];
+                o_jump_direction        <= w_jump_direction;
+                o_pc_plus_1             <= w_pc_plus_1;
+                
+                o_rd                    <= i_instruccion[11:7];
+                o_halt                  <= i_halt;
+                o_pc_selec              <= w_flush && !o_stall;
+            end 
+        end       
     end
 endmodule

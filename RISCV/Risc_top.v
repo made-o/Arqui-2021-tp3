@@ -46,8 +46,8 @@ module Risc_Top #(
     wire [N_BITS_INST - 1:0] w_inst_data_carga; // NBITS = 32 (según I_Fetch.v)
 
     // Deco <--> Debug Manager (Datos del procesador)
-    (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_D_reg_to_send; // Registro leída de la memoria (para TX/Debug)
-    (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_MEM_mem_to_send; // Registro leída de la memoria (para TX/Debug)
+    (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_D_reg_to_send; 
+    (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_MEM_mem_to_send; 
     (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_dato_leido1;
     (*KEEP = "true", MARK_DEBUG = "true" *)wire [N_BITS_INST - 1:0] w_dato_leido2;
     
@@ -80,7 +80,7 @@ module Risc_Top #(
     (*KEEP = "true", MARK_DEBUG = "true" *) wire w_step;
 
     (*KEEP = "true", MARK_DEBUG = "true" *) wire [N_BITS_INST - 1:0] pc_out;
-    (*KEEP = "true", MARK_DEBUG = "true" *) wire [N_BITS_INST - 1:0] w_pc_UART;
+    (*KEEP = "true", MARK_DEBUG = "true" *) wire [N_BITS_INST - 1:0] w_pc_jump;
 
     (*KEEP = "true", MARK_DEBUG = "true" *) wire w_inicializando;
 
@@ -100,15 +100,11 @@ module Risc_Top #(
     wire [N_BITS_INST-1:0]  w_aluResult_MEM;
     wire [N_BITS_INST-1:0]  w_datoLeido2_EX;
     wire [N_BITS_REG-1:0]   w_rd_data_EX;
-    wire [N_BITS_REG-1:0]   w_rs2_EX;
-    wire                    w_regWrite_EX_MEM;
-    wire                    w_regWrite_MEM_WB;
     wire [1:0]              w_mem_size;
-    wire                    w_meme_unsigned;
+    wire                    w_mem_unsigned;
 
     //Salidas de la etapa MEM
     wire [N_BITS_REG-1:0]   w_rd_MEM;
-    wire [N_BITS_REG-1:0]   w_rd_data_MEM;
     wire [N_BITS_INST-1:0]  w_readData;
 
     //Salidas de la etapa WB  
@@ -172,7 +168,7 @@ module Risc_Top #(
 
         // Datos provenientes de I_fetch
         .i_F_instruction(w_instruction_IF), //32
-        .i_F_pc(w_pc_UART), //32
+        .i_F_pc(w_pc_jump), //32
         
         // Datos provenientes de I_Deco
         .i_D_reg_send(w_D_reg_to_send),
@@ -191,7 +187,6 @@ module Risc_Top #(
         .i_EX_ceroSignal(w_ceroSignal),
         .i_EX_datoLeido2(w_datoLeido2_EX),
         .i_EX_rd_data_EX(w_rd_data_EX),
-        //.i_EX_rt_OR_rd_EX(w_rs2_EX),
         .i_EX_control_bits_EX(w_control_bits_EX),
         
         // Datos provenientes de MEM
@@ -228,14 +223,14 @@ module Risc_Top #(
         .o_state (w_led_state)//
     );
 
-    // D. INSTANCIACIÓN DEL I_FETCH
+    // INSTANCIACIÓN DEL I_FETCH
     (* keep = "true" *)I_Fetch #(
         .NBITS(N_BITS_INST),
         .ADDR_WIDTH(5)
     ) u_instruction_fetch (
         .i_clk(w_clk_50MHz),
         .i_reset(r_reset_system),
-        .i_enable(!w_inicializando),  // Habilito pc y la memoria luego de la carga de la memoria(es redundante)
+        .i_enable(!w_inicializando), 
         .i_stall(w_stall),
         .i_inicializando(w_inicializando), // ver bien como usar este flag, se usa en el modulo pc
         .i_jump_address(w_jump_direction),
@@ -253,13 +248,12 @@ module Risc_Top #(
         
         // Outputs
         .o_instruction(w_instruction_IF),
-        .o_data_send_tx(),
         .o_halt_signal(w_halt_IF),
-        .o_pc_UART(w_pc_UART),
+        .o_pc_UART(w_pc_jump),
         .o_pc(pc_out)
     );
     
-    // D. INSTANCIACIÓN DEL I_DECODE
+    // INSTANCIACIÓN DEL I_DECODE
     (* keep = "true" *)instructionDecode #(
         .N_BITS(N_BITS_INST),
         .N_REG_BITS(N_BITS_REG)
@@ -276,7 +270,7 @@ module Risc_Top #(
         .i_instruccion(w_instruction_IF),
         .i_WB_data_to_write(w_WB_writeData_forwarding),
         .i_addr_a_escribir(w_rd_WB),
-        .i_pc_4(w_pc_UART),
+        .i_pc_4(w_pc_jump),
         
         // Interface para TX - usa addr_to_send del Debug Manager
         .i_addr_tx_ID(w_addr_to_send_ID),
@@ -381,7 +375,7 @@ module Risc_Top #(
         .o_datoLeido2(w_datoLeido2_EX), //32bits
         .o_rd_data(w_rd_data_EX), //5bits
         .o_mem_size(w_mem_size),
-        .o_meme_unsigned(w_meme_unsigned), 
+        .o_meme_unsigned(w_mem_unsigned), 
         .o_branch(w_control_bits_EX[1:0]), //2bits //Puede que no lo use mas que en ID
         .o_memRead(w_control_bits_EX[2]), //1bits
         .o_memWrite(w_control_bits_EX[3]), //1bits
@@ -415,7 +409,7 @@ module Risc_Top #(
         .i_step(w_step),
 
         .i_mem_size(w_mem_size),
-        .i_mem_unsigned(w_meme_unsigned), 
+        .i_mem_unsigned(w_mem_unsigned), 
         
         .i_addr_tx_MEM(w_addr_to_send_MEM), //Debug Manager
    
@@ -430,7 +424,6 @@ module Risc_Top #(
         .o_readData(w_readData),
         .o_aluResult(w_aluResult_MEM),
         .o_rd(w_rd_MEM)
-        //.o_rd_MEM(w_rd_data_MEM)
     );
     
     (* keep = "true" *)writeBack #(
@@ -473,11 +466,11 @@ module Risc_Top #(
     ila_0 ILA_Debug (
         .clk(w_clk_50MHz), // input wire clk
     
-        .probe0(pc_out), // input wire [31:0]  probe0  
-        .probe1(w_instruction_IF), // input wire [31:0]  probe1
-        .probe2(w_inicializando), // input wire [32:0]  probe5 
-        .probe3(w_stall), // input wire [32:0]  probe6 
-        .probe4(w_step), // input wire [32:0]  probe6 
+        .probe0(pc_out),   
+        .probe1(w_instruction_IF), 
+        .probe2(w_inicializando), 
+        .probe3(w_stall),  
+        .probe4(w_step),  
         .probe5(w_exec_mode)
     );
 

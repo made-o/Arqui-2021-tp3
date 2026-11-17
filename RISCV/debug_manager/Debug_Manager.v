@@ -39,7 +39,6 @@ module debug_manager #(
     input [N_BITS_INST-1 : 0]       i_EX_aluResult,
     input [N_BITS_INST-1 : 0]       i_EX_datoLeido2,
     input [N_BITS_REG-1 : 0]        i_EX_rd_data_EX,
-    //input [N_BITS_REG-1 : 0]        i_EX_rt_OR_rd_EX,
     input [6-1 : 0]                 i_EX_control_bits_EX,
     input                           i_EX_ceroSignal,
     
@@ -47,13 +46,11 @@ module debug_manager #(
     input [N_BITS_INST-1:0]         i_MEM_data_mem_send, 
     input [N_BITS_INST-1 : 0]       i_MEM_aluResult,
     input [N_BITS_INST-1 : 0]       i_MEM_readDataMEM,
-    //input [N_BITS_REG-1 : 0]        i_MEM_rd_data,
     input [N_BITS_REG-1 : 0]        i_MEM_rt_OR_rd,
     input [2-1 : 0]                 i_MEM_control_bits,
 
     // Datos provenientes de WB
     input [N_BITS_INST-1:0]         i_WB_writeData, 
-    //input [N_BITS_REG-1:0]          i_rt_OR_rd_WB, 
     input [N_BITS_REG-1:0]          i_rd_WB, 
     input                           i_WB_regWrite, 
 
@@ -76,7 +73,7 @@ module debug_manager #(
     //==========================================================================
     // Estados de la FSM (3 bits)
     //==========================================================================
-    localparam [2:0] IDLE       = 3'b000; // Nuevo: Espera 1E o 0E
+    localparam [2:0] IDLE       = 3'b000; // Nuevo: Espera al boton i_flag_edge
     localparam [2:0] WAIT_CMD   = 3'b001; // Nuevo: Espera 1E o 0E
     localparam [2:0] REC        = 3'b010; // Recibir instrucciones
     localparam [2:0] WAIT_HALT  = 3'b011; // Nuevo: Esperar Halt (Modo 0)
@@ -175,7 +172,6 @@ module debug_manager #(
             w_send_started <= 1'b0;
             o_write_enable <= 1'b0;
             halt_detected <= 1'b0;
-            //halt_step_count <= 2'd0;
             halt_has_come <= 1'b0;
             inicializando <= 1'b1;
 
@@ -303,7 +299,7 @@ module debug_manager #(
 
             SENDING: begin
                 if (done) begin
-                    if (o_exec_mode == 1'b1) begin //deberia poner un flag para cunado se ejecute la ultima instruccion.
+                    if (o_exec_mode == 1'b1) begin
                         if (halt_has_come) begin // && halt_step_count == 2'd3) begin
                             next_state = IDLE;
                         end else begin

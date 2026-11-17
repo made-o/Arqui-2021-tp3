@@ -7,7 +7,6 @@ module writeBack #(
 (  
    input  i_clk,
    input  i_reset,
-   //input  i_valid,
    input  i_exec_mode,
    input  i_step,
    input  i_halt,
@@ -35,29 +34,29 @@ module writeBack #(
 
    ////////////////////////////////////////////////////
    // Start-code:
-   reg [N_BITS-1:0] w_WB_writeData;
+   reg [N_BITS-1:0] r_WB_writeData;
    // Multiplexor for MemToReg signal:
    always @(*) begin
       case(i_memToReg)
-         1'b0: w_WB_writeData = i_AluResult;
-         1'b1: w_WB_writeData = i_datoLeido_MEM;
+         1'b0: r_WB_writeData = i_AluResult;
+         1'b1: r_WB_writeData = i_datoLeido_MEM;
       endcase
    end//end_always
    
    //--------------------------------------------
    // Lectura y escritura: (update outputs)
-   always @(posedge i_clk) begin: WB_IF
+   always @(posedge i_clk) begin: WB
 
       if(i_reset) begin       
          o_WB_writeData  <= 32'b0;
          o_cpu_finished  <= 1'b0; 
       end
       else if((i_exec_mode == 1'b0 || (i_exec_mode && i_step)))begin 
-         o_WB_writeData  <= w_WB_writeData;
+         o_WB_writeData  <= r_WB_writeData;
          o_cpu_finished  <= i_halt;       
       end    
    end
-   assign o_WB_writeData_forwarding = w_WB_writeData;
+   assign o_WB_writeData_forwarding = r_WB_writeData;
    assign o_rd = i_reset ? 5'b0 : i_rd;
    assign o_WB_regWrite = i_reset ? 1'b0 : i_regWrite;
 endmodule

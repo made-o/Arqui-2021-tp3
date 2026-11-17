@@ -2,17 +2,12 @@
 
 module control#
 (
-	parameter	N_BITS		  = 32,
 	parameter 	N_BITS_OP	  = 7,
 	parameter 	N_BITS_FUNC_3 = 3
 )
 (
-    //input  wire       			 i_clk,
     input  wire     		     	i_reset,
     input  wire       		 	 	i_valid,
-    input  wire       		 	 	i_stall,
-    input  wire       		 	 	i_flush,
-	//input  wire					 i_halt,
 	input  wire [N_BITS_OP-1:0]	 	i_opcode,
 	input  wire [N_BITS_FUNC_3-1:0]	i_func3,
     
@@ -78,7 +73,7 @@ module control#
 				end
 			end
 
-			//tipo beq
+			//tipo branch condicional
 			7'b1100011:
 			begin
 				o_control_WB_memtoReg 	= 1'b0;

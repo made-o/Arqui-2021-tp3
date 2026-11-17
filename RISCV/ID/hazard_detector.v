@@ -11,8 +11,6 @@ module hazard_detector#
     input  wire [N_BITS_REG-1:0] i_rs1,
     input  wire [N_BITS_REG-1:0] i_rs2,
     
-    //input  wire [N_BITS_REG-1:0] i_Alu_rt,
-    
     input  wire [N_BITS-1:0]     i_jump_direction,
     input  wire [N_BITS-1:0]     i_PC,
     input  wire [N_BITS-1:0]     i_dato_leido_1,
@@ -49,7 +47,7 @@ module hazard_detector#
                    (i_opcode != 7'b1101111); // LUI y JAL NO lo usan
     wire use_rs2 = (i_opcode == 7'b0110011) || 
                    (i_opcode == 7'b0100011) || 
-                   (is_branch_condicional); // BNQ, BEQ, tipo sabe y tipo R SI lo usan
+                   (is_branch_condicional); // BNQ, BEQ, tipo S y tipo R si lo usan
     
     always@(*)
     begin: calculo_stall 
@@ -76,7 +74,7 @@ module hazard_detector#
             end
         end
     end
-    //WARNING: parece un forwardin pero le faltan condiciones
+    
     always@(*)
     begin: mux_data1
         if((i_rs1 == i_EX_MEM_rt) && i_control_WB_regWrite_EX_MEM && 
