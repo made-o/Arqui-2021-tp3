@@ -24,8 +24,8 @@ module interface_tx
 #
 (
     parameter N_BITS_INST = 32,
-    parameter MEM_REG_COUNT = 5,//32,
-    parameter MEM_DATA_COUNT = 5,//128,
+    parameter MEM_REG_COUNT = 32,
+    parameter MEM_DATA_COUNT = 128,
     parameter N_BITS_UART  = 8,
     parameter N_BITS_REG   = 5
 )
