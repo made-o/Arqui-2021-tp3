@@ -134,7 +134,9 @@ module regMemory #(
     end//end_always
     */
     assign o_data_send_tx = data_send_tx;
-    assign o_data1 = memBlock[i_reg_lectura1];
-    assign o_data2 = memBlock[i_reg_lectura2];
+    assign o_data1 = (i_WriteEnable && i_regWrite_addr != 0 && i_regWrite_addr == i_reg_lectura1)
+                 ? i_dato_a_escribir : memBlock[i_reg_lectura1];
+    assign o_data2 = (i_WriteEnable && i_regWrite_addr != 0 && i_regWrite_addr == i_reg_lectura2)
+                 ? i_dato_a_escribir : memBlock[i_reg_lectura2];
     
 endmodule
