@@ -6,16 +6,10 @@ module hazard_detector#
     N_BITS_REG = 5
 )
 (
-    //input  wire                  i_PCSrc_ID,
-    //input  wire                  i_PCSrc_EX,
-    //input  wire [N_BITS_REG-1:0] i_ID_EX_memRead,
-    
     input  wire [1:0]            i_branch,
     
     input  wire [N_BITS_REG-1:0] i_rs1,
     input  wire [N_BITS_REG-1:0] i_rs2,
-    
-    //input  wire [N_BITS_REG-1:0] i_Alu_rt,
     
     input  wire [N_BITS-1:0]     i_jump_direction,
     input  wire [N_BITS-1:0]     i_PC,
@@ -38,7 +32,6 @@ module hazard_detector#
     input  wire [N_BITS-1:0]     i_dato_salida_ALU,
     input  wire [N_BITS-1:0]     i_dato_salida_MEM,
     
-    //output reg                   o_PCSrc,
     output wire [N_BITS-1:0]      o_dato_reg_forwarding_1,
     output reg                   o_flush,
     output reg                   o_stall,
@@ -54,7 +47,7 @@ module hazard_detector#
                    (i_opcode != 7'b1101111); // LUI y JAL NO lo usan
     wire use_rs2 = (i_opcode == 7'b0110011) || 
                    (i_opcode == 7'b0100011) || 
-                   (is_branch_condicional); // BNQ, BEQ, tipo sabe y tipo R SI lo usan
+                   (is_branch_condicional); // BNQ, BEQ, tipo S y tipo R si lo usan
     
     always@(*)
     begin: calculo_stall 
@@ -81,7 +74,7 @@ module hazard_detector#
             end
         end
     end
-    //WARNING: parece un forwardin pero le faltan condiciones
+    
     always@(*)
     begin: mux_data1
         if((i_rs1 == i_EX_MEM_rt) && i_control_WB_regWrite_EX_MEM && 

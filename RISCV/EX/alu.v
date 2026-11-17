@@ -3,23 +3,16 @@
 `define AND  6'b000000   // AND (bit-a-bit)
 `define OR   6'b000001   // OR (bit-a-bit)
 `define ADD  6'b000010   // ADD Word
-//`define ADDU 6'b000011   // ADD Unsigned Word
-//`define NOR  6'b000100   // logical NOR
 `define XOR  6'b000101   // logical XOR
 `define SLL  6'b000110   // Shift Word Left Logic (desplazamiento a la izquierda)
 `define SRL  6'b000111   // Shift Word Right Logic (desplazamiento a la derecha)
 `define SRA  6'b001000   // Shift Right Arithmetic
 `define SLTU 6'b001010   // 
-//`define SRLV 6'b001010   // Shift Right Logical Variable
-//`define SRAV 6'b001011   // Shift Right Arithmetic Variable
-//`define SUBU 6'b001100   // Subtract Unsigned Word
 `define SUB  6'b001101   // 
 `define SLT  6'b001110   // Set Less Than
 `define LUI_AND_J  6'b001111   // Load Upper Immediate
-//`define LB   6'b010000   // Load Byte
 `define LSs  6'b010001   // Loads Signed, suma al fin
 `define LUs  6'b010010   // Loads Unsigned, ADD Unsigned Word
-//`define LHU  6'b010011   // Load Half Word Unsigned
  
 //////////////////////////////////////////////////////////////
 module alu #(
@@ -54,8 +47,8 @@ module alu #(
          `SLTU: o_aluResult = ($unsigned(i_datoA) < $unsigned(i_datoB))? 32'b1: 32'b0;
          
          `SLT:  o_aluResult = $signed(i_datoA) < $signed(i_datoB)? 32'b1: 32'b0;
-         `LSs:  o_aluResult = (i_datoA + i_datoB);// & 32'h0xffff;
-         `LUs:  o_aluResult = ($unsigned(i_datoA) + $unsigned(i_datoB));// & 32'h0xff;
+         `LSs:  o_aluResult = (i_datoA + i_datoB);
+         `LUs:  o_aluResult = ($unsigned(i_datoA) + $unsigned(i_datoB));
          
          `LUI_AND_J:  o_aluResult = i_datoB;
 

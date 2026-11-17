@@ -8,8 +8,6 @@ module receiver
    input  wire i_s_tick,
    input  wire i_rx,
    
-   //output reg [32:0] fifo_mem [10:0],
-   
    output reg  o_rx_done_tick,
    output wire [D_BIT-1:0] o_data
  );
@@ -31,7 +29,6 @@ module receiver
    always @(posedge i_clock)
      if(i_reset) begin
         state_reg <= idle;
-        //state_next <= idle;
         s_reg <= 0;
         n_reg <= 0;
         b_reg <='d0;

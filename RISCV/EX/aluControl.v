@@ -50,7 +50,7 @@ module aluControl#(
       ////////////////////////////////////////
       2'b10: // R-Type
       begin
-         case({i_func3, i_func7}) // Se leen los datos de instruccion[6:0] -> FUNCT
+         case({i_func3, i_func7})
             10'b111_0000000: o_opcodeAlu = 6'b000000; // AND -> dato_A & dato_B
             10'b110_0000000: o_opcodeAlu = 6'b000001; // OR -> dato_A | dato_B
             10'b000_0000000: o_opcodeAlu = 6'b000010; // ADD -> (dato_A) + (dato_B)
@@ -62,19 +62,14 @@ module aluControl#(
             10'b011_0000000: o_opcodeAlu = 6'b001010; // SLTU -> (unsign(dato_A) < unsign(dato_B)) ? 1 : 0;
             10'b000_0100000: o_opcodeAlu = 6'b001101; // SUB -> dato_A - dato_B
             10'b010_0000000: o_opcodeAlu = 6'b001110; // SLT -> (dato_A < dato_B) ? 1 : 0
-            //7'b0110011_: o_opcodeAlu = 6'b001100; // SUBU -> 
-            //7'b0110011_: o_opcodeAlu = 6'b001110; // SLT -> dato_A < dato_B
-            //7'b0110011_: o_opcodeAlu = {N_OPCODE_O{1'b1}}; // JR -> Invalid input for the ALU
-            //7'b0110011_: o_opcodeAlu = {N_OPCODE_O{1'b1}}; // JALR -> Invalid input for the ALU
-            
+           
             default: o_opcodeAlu = {N_OPCODE_O{1'b1}}; // Invalid input for the ALU
          endcase
       end
       ////////////////////////////////////////
       2'b11: // I-Type
       begin
-         casex({i_func3, i_func7}) // Se leen los datos de instruccion[31:26] -> OP
-            //10'b010_0000000: o_opcodeAlu = 6'b001111; // LUI -> dato_B << 16
+         casex({i_func3, i_func7})
             10'b000_xxxxxxx: o_opcodeAlu = 6'b000010; // ADDI -> dato_A + dato_B
             10'b111_xxxxxxx: o_opcodeAlu = 6'b000000; // ANDI -> dato_A & dato_B
             10'b110_xxxxxxx: o_opcodeAlu = 6'b000001; // ORI -> dato_A | dato_B

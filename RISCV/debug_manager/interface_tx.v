@@ -35,10 +35,6 @@ module interface_tx
     input wire i_exec_mode, //si es continuo o paso a paso
     input wire i_send_start,      //ejecutar un paso
     
-    //Valores para enviar al UART
-    //input wire [N_BITS_INSTR-1:0]              i_pc,
-    //input wire [N_BITS_INSTR-1:0]              instruccion,
-    
     // Etapa IF
     input [N_BITS_INST-1:0]  i_pc,
     input [N_BITS_INST-1:0]  i_instruction,
@@ -60,7 +56,6 @@ module interface_tx
     input [N_BITS_INST-1:0] i_EX_aluResult,
     input [N_BITS_INST-1:0] i_EX_datoLeido2,
     input [N_BITS_REG-1:0]  i_EX_rd_data_EX,
-    //input [N_BITS_REG-1:0]  i_EX_rt_OR_rd_EX,
     input [6-1 : 0]         i_EX_control_bits_EX,
     input                   i_EX_ceroSignal,
 
@@ -69,17 +64,14 @@ module interface_tx
 
     input [N_BITS_INST-1:0] i_MEM_aluResult,
     input [N_BITS_INST-1:0] i_MEM_readDataMEM,
-    //input [N_BITS_REG-1:0]  i_MEM_rd_data,
     input [N_BITS_REG-1:0]  i_MEM_rt_OR_rd,
     input [2-1 : 0]         i_MEM_control_bits,
 
     // Etapa WB
     input [N_BITS_INST-1:0]         i_WB_writeData, 
     input [N_BITS_REG-1:0]          i_rd, 
-    //input [N_BITS_REG-1:0]          i_rd_MEM_WB, 
     input                           i_WB_regWrite, 
 
-    input wire i_halt,
     input wire i_tx_done,
     
     output reg                      o_tx_start,
@@ -98,7 +90,6 @@ module interface_tx
 	localparam [3:0] INDEX_RESET    = 4'b0101;
 	localparam [3:0] REG            = 4'b0110;
 	localparam [3:0] MEM            = 4'b0111;
-	localparam [3:0] CNTR           = 4'b1000;
     localparam [3:0] EX_INIT        = 4'b1001;
     localparam [3:0] EX_SEND        = 4'b1010;
     localparam [3:0] MEM_INIT       = 4'b1011;
@@ -132,12 +123,6 @@ module interface_tx
 
     reg [2:0] reset_index_flag;
 
-    reg [N_BITS_INST-1 : 0] IF_array_data;
-    reg [N_BITS_INST-1 : 0] ID_array_data;
-    reg [N_BITS_INST-1 : 0] EX_array_data;
-    reg [N_BITS_INST-1 : 0] MEM_array_data;
-    reg [N_BITS_INST-1 : 0] WB_array_data;
-
     assign IF_array[0] = i_pc;
     assign IF_array[1] = i_instruction;
 
@@ -157,13 +142,6 @@ module interface_tx
 
     assign WB_array[0] = i_WB_writeData;
     assign WB_array[1] = {3'b0, i_rd, 5'b0/*i_rd_MEM_WB*/, 3'b0, i_WB_regWrite, 15'b0};
-
-    //reg                    tx_done;
-    
-    //integer carga_reg = 0;
-    
-    //reg index_reset_flag = 0;
-	//cambios de estado
 	
     always @(posedge i_clk) begin: state_update
         if (i_reset) begin
@@ -194,7 +172,6 @@ module interface_tx
                     o_done <= 1'b0;
                     o_mem_done <= 1'b0;
                     o_tx_start <= 1'b0;
-                    //data <= IF_array[0];
                     data_add_ID <= 5'b0;
                     data_add_MEM <= 5'b0;
                     array_ptr <= 3'b0;
@@ -202,12 +179,10 @@ module interface_tx
                 end
 
                 IF_INIT: begin
-                    IF_array_data <= IF_array[array_ptr];
                     data <= IF_array[array_ptr];
                 end
                 
                 IF_SEND: begin
-                    //data = IF_array_data;
                     o_tx_start <= 1'b1;
                     
                     // Cuando termina transmisión de un byte
@@ -219,27 +194,22 @@ module interface_tx
                             index_8_bit <= 3'd0;
                             if (array_ptr < IF_ARRAY_DEPTH - 1) begin
                                 array_ptr <= array_ptr + 1'b1;
-                                //IF_array_data <= IF_array[array_ptr + 1'b1];
                             end
                             else begin
                                 // YA SE ENVIÓ TODA LA MATRIZ
-                                //o_tx_start <= 1'b0;
-                                array_ptr <= 5'd0; // Opcional: resetear para la próxima vez
-                                // Aquí podrías cambiar de estado: next_state = DONE;
+                                array_ptr <= 5'd0;
                             end
                         end
                     end
                 end
 
                 ID_INIT: begin
-                    ID_array_data <= ID_array[array_ptr];
                     data <= ID_array[array_ptr];
                 end
 
                 ID_SEND: begin
                     o_tx_start <= 1'b1;
                     reset_index_flag <= 3'b001;
-                    //data = ID_array_data;
                     
                     // Cuando termina transmisión de un byte
                     if (i_tx_done) begin
@@ -251,27 +221,22 @@ module interface_tx
                             index_8_bit <= 3'd0;
                             if (array_ptr < ID_ARRAY_DEPTH - 1) begin
                                 array_ptr <= array_ptr + 1'b1;
-                                //ID_array_data <= ID_array[array_ptr + 1'b1];
                             end
                             else begin
                                 // YA SE ENVIÓ TODA LA MATRIZ
-                                //o_tx_start <= 1'b0;
-                                array_ptr <= 5'd0; // Opcional: resetear para la próxima vez
-                                // Aquí podrías cambiar de estado: next_state = DONE;
+                                array_ptr <= 5'd0;
                             end
                         end
                     end
                 end
                 
                 EX_INIT: begin
-                    EX_array_data <= EX_array[array_ptr];
                     data <= EX_array[array_ptr];
                 end
 
                 EX_SEND: begin
                     o_tx_start <= 1'b1;
                     reset_index_flag <= 3'b010;
-                    //data = ID_array_data;
                     
                     // Cuando termina transmisión de un byte
                     if (i_tx_done) begin
@@ -283,27 +248,22 @@ module interface_tx
                             index_8_bit <= 3'd0;
                             if (array_ptr < EX_ARRAY_DEPTH - 1) begin
                                 array_ptr <= array_ptr + 1'b1;
-                                //ID_array_data <= ID_array[array_ptr + 1'b1];
                             end
                             else begin
                                 // YA SE ENVIÓ TODA LA MATRIZ
-                                //o_tx_start <= 1'b0;
-                                array_ptr <= 5'd0; // Opcional: resetear para la próxima vez
-                                // Aquí podrías cambiar de estado: next_state = DONE;
+                                array_ptr <= 5'd0;
                             end
                         end
                     end
                 end
 
                 MEM_INIT: begin
-                    MEM_array_data <= MEM_array[array_ptr];
                     data <= MEM_array[array_ptr];
                 end
 
                 MEM_SEND: begin
                     o_tx_start <= 1'b1;
                     reset_index_flag <= 3'b011;
-                    //data = ID_array_data;
                     
                     // Cuando termina transmisión de un byte
                     if (i_tx_done) begin
@@ -315,27 +275,22 @@ module interface_tx
                             index_8_bit <= 3'd0;
                             if (array_ptr < MEM_ARRAY_DEPTH - 1) begin
                                 array_ptr <= array_ptr + 1'b1;
-                                //ID_array_data <= ID_array[array_ptr + 1'b1];
                             end
                             else begin
                                 // YA SE ENVIÓ TODA LA MATRIZ
-                                //o_tx_start <= 1'b0;
-                                array_ptr <= 5'd0; // Opcional: resetear para la próxima vez
-                                // Aquí podrías cambiar de estado: next_state = DONE;
+                                array_ptr <= 5'd0; 
                             end
                         end
                     end
                 end
 
                 WB_INIT: begin
-                    WB_array_data <= WB_array[array_ptr];
                     data <= WB_array[array_ptr];
                 end
 
                 WB_SEND: begin
                     o_tx_start <= 1'b1;
                     reset_index_flag <= 3'b100;
-                    //data = ID_array_data;
                     
                     // Cuando termina transmisión de un byte
                     if (i_tx_done) begin
@@ -347,13 +302,10 @@ module interface_tx
                             index_8_bit <= 3'd0;
                             if (array_ptr < WB_ARRAY_DEPTH - 1) begin
                                 array_ptr <= array_ptr + 1'b1;
-                                //ID_array_data <= ID_array[array_ptr + 1'b1];
                             end
                             else begin
                                 // YA SE ENVIÓ TODA LA MATRIZ
-                                //o_tx_start <= 1'b0;
-                                array_ptr <= 5'd0; // Opcional: resetear para la próxima vez
-                                // Aquí podrías cambiar de estado: next_state = DONE;
+                                array_ptr <= 5'd0;
                             end
                         end
                     end
@@ -367,18 +319,18 @@ module interface_tx
                 
                 REG: begin
                     o_mem_done <= 1'b0;
-                    data <= i_D_reg_send; // data <= i_instruction;
+                    data <= i_D_reg_send;
                     if(o_done == 1'b0)
                         o_tx_start <= 1'b1;
                     
                     if (i_tx_done) begin
                         if (index_8_bit < 3'd3) begin
-                            // Continuar con siguiente byte de la instrucción actual
+                            // Continuar con siguiente byte del registro actual
                             index_8_bit <= index_8_bit + 1'b1;
                             if(index_8_bit == 3'd2 && reg_addr < MEM_REG_COUNT - 1)
                                 data_add_ID <= reg_addr + 1'b1;
                         end else begin
-                            // Terminó de enviar lo s 4 bytes de esta instrucción
+                            // Terminó de enviar lo s 4 bytes de este registro
                             index_8_bit <= 3'b0;
                             
                             o_tx_start <= 1'b0;
@@ -404,12 +356,12 @@ module interface_tx
                     
                     if (i_tx_done) begin
                         if (index_8_bit < 3'd3) begin
-                            // Continuar con siguiente byte de la instrucción actual
+                            // Continuar con siguiente byte de la posicion de memoria actual
                             index_8_bit <= index_8_bit + 1'b1;
                             if(index_8_bit == 3'd2 && mem_addr < MEM_DATA_COUNT - 1)
                                 data_add_MEM <= mem_addr + 1'b1;
                         end else begin
-                            // Terminó de enviar lo s 4 bytes de esta instrucción
+                            // Terminó de enviar los 4 bytes de esta posicion de memoria
                             index_8_bit <= 3'b0;
                             
                             o_tx_start <= 1'b0;
@@ -427,23 +379,6 @@ module interface_tx
                     end
                 end
 
-                /*
-                CNTR: begin
-                    // Para cuando implementes contador de ciclos
-                    data <= 32'b0; // i_ciclos
-                    o_tx_start <= 1'b1;
-                    
-                    if (i_tx_done) begin
-                        if (index_8_bit < 3'd3) begin
-                            index_8_bit <= index_8_bit + 1'b1;
-                        end else begin
-                            index_8_bit <= 3'b0;
-                            o_done <= 1'b1;
-                            o_tx_start <= 1'b0;
-                        end
-                    end
-                end
-                */
                 default: begin
                     index_8_bit <= 3'b0;
                     reg_addr <= 5'b0;
@@ -462,7 +397,7 @@ module interface_tx
         
         case (current_state)
             IDLE: begin
-                if (i_send_start) begin// || (i_exec_mode && i_send_start)) begin
+                if (i_send_start) begin
                     next_state = IF_INIT;
                 end
             end
@@ -471,10 +406,7 @@ module interface_tx
                 next_state = IF_SEND;
             end
             IF_SEND: begin
-                // Esperar a que termine de enviar los datos de IF,
-                // aunque espera a que index_8_bit sea 2 y no 3 que es el ultimo ya que
-                // para entoncesya se estaria enviando el ultimo byte y debo pasar a la siguiente
-                // etapa.
+                // Esperar a que termine de enviar los datos de IF
                 if (i_tx_done && index_8_bit == 3'd3) begin
                     if(array_ptr == IF_ARRAY_DEPTH - 1)
                         next_state = INDEX_RESET;
@@ -482,14 +414,6 @@ module interface_tx
                         next_state = IF_INIT;
                 end
             end
-             /*                 
-            INDEX_RESET: begin
-                // Estado transitorio de un ciclo para resetear índice
-                if(reset_index_flag == 1'b0) begin
-                    next_state = ID_INIT;
-                end else
-                    next_state = REG;
-            end*/
             
             INDEX_RESET: begin
                 // Estado transitorio de un ciclo para resetear índice
@@ -507,9 +431,6 @@ module interface_tx
             end
             ID_SEND: begin
                 // Esperar a que termine de enviar los datos de ID,
-                // aunque espera a que index_8_bit sea 2 y no 3 que es el ultimo ya que
-                // para entoncesya se estaria enviando el ultimo byte y debo pasar a la siguiente
-                // etapa.
                 if (i_tx_done && index_8_bit == 3'd3) begin
                     if(array_ptr == ID_ARRAY_DEPTH - 1)
                         next_state = INDEX_RESET;
@@ -523,10 +444,6 @@ module interface_tx
                 if (o_done) begin
                     next_state = IDLE;
                 end
-                // Si quieres ir a MEM después:
-                // if (o_done) begin
-                //     next_state = MEM;
-                // end
             end
             
             MEM: begin
@@ -534,20 +451,13 @@ module interface_tx
                 if (o_mem_done) begin
                     next_state = REG;
                 end
-                // Si quieres ir a MEM después:
-                // if (o_done) begin
-                //     next_state = MEM;
-                // end
             end
 
             EX_INIT: begin
                 next_state = EX_SEND;
             end
             EX_SEND: begin
-                // Esperar a que termine de enviar los datos de ID,
-                // aunque espera a que index_8_bit sea 2 y no 3 que es el ultimo ya que
-                // para entoncesya se estaria enviando el ultimo byte y debo pasar a la siguiente
-                // etapa.
+                // Esperar a que termine de enviar los datos de EX,
                 if (i_tx_done && index_8_bit == 3'd3) begin
                     if(array_ptr == EX_ARRAY_DEPTH - 1)
                         next_state = INDEX_RESET;
@@ -560,10 +470,7 @@ module interface_tx
                 next_state = MEM_SEND;
             end
             MEM_SEND: begin
-                // Esperar a que termine de enviar los datos de ID,
-                // aunque espera a que index_8_bit sea 2 y no 3 que es el ultimo ya que
-                // para entoncesya se estaria enviando el ultimo byte y debo pasar a la siguiente
-                // etapa.
+                // Esperar a que termine de enviar los datos de MEM
                 if (i_tx_done && index_8_bit == 3'd3) begin
                     if(array_ptr == MEM_ARRAY_DEPTH - 1)
                         next_state = INDEX_RESET;
@@ -576,10 +483,7 @@ module interface_tx
                 next_state = WB_SEND;
             end
             WB_SEND: begin
-                // Esperar a que termine de enviar los datos de ID,
-                // aunque espera a que index_8_bit sea 2 y no 3 que es el ultimo ya que
-                // para entoncesya se estaria enviando el ultimo byte y debo pasar a la siguiente
-                // etapa.
+                // Esperar a que termine de enviar los datos de WB
                 if (i_tx_done && index_8_bit == 3'd3) begin
                     if(array_ptr == WB_ARRAY_DEPTH - 1)
                         next_state = INDEX_RESET;
@@ -588,195 +492,11 @@ module interface_tx
                 end
             end
 
-            /*
-            MEM: begin
-                if (i_tx_done && index_8_bit == 3'd3) begin
-                    next_state = CNTR;
-                end
-            end
-            
-            CNTR: begin
-                if (o_done) begin
-                    next_state = IDLE;
-                end
-            end
-            */
             default: begin
                 next_state = IDLE;
             end
         endcase
     end
-    
-    /*
-	always@(posedge i_clk) begin:check_state
-		if(i_reset)
-		begin
-            state_reg  <= IDLE;
-            o_done <= 0;
-            //next_state <= IDLE;
-        end
-		else
-		begin
-			state_reg <= next_state;
-			
-			if(state_reg == IDLE)
-            begin
-                o_done <= 0;
-                index_8_bit <= 5'b0;
-            end
-            
-            if(tx_done && state_reg == PC)
-            begin                
-                index_8_bit <= index_8_bit + 1;
-                index_reset_flag <= 0;
-            end   
-                     
-            if(state_reg == INDEX_RESET)
-            begin                
-                index_8_bit <= 5'b0;
-                index_reset_flag <= 1;
-            end
-            
-            if (state_reg == REG) 
-            begin
-                if (tx_done && !carga_reg) 
-                begin
-                    index_8_bit <= index_8_bit + 1;
-                    if (index_8_bit == 3) 
-                    begin
-                        index_8_bit <= 5'b0;
-                        //o_tx_start <= 0;
-                        if (reg_num == N_REG-1) 
-                        begin
-                            o_done <= 1;
-                            reg_num <= 5'b0;
-                        end 
-                        else 
-                        begin
-                            reg_num <= reg_num + 1;
-                            carga_reg <= 1;
-                        end
-                    end
-                end 
-                else 
-                begin
-                    carga_reg <= 0;
-                end
-            end
-        end           
-	end//check_state
-
-    always@(*)begin:next
-        next_state = state_reg;
-        
-        case(state_reg)
-            IDLE: // O se hizo el step.
-            begin
-                data       = 32'b0;
-                o_tx_start = 1'b0;
-                //o_done     = 1'b0;
-                
-                if(i_halt || (i_exec_mode == 1'b1 && i_step))//
-                begin
-                    next_state = PC;
-                end
-                else
-                begin
-                    next_state = IDLE;
-                end
-            end
-            PC:
-            begin
-                data = i_pc;
-                o_tx_start = 1'b1;
-                
-                if(tx_done && index_8_bit == 3)
-                begin
-                    next_state = INDEX_RESET;
-                    o_tx_start = 1'b0;
-                end
-                else
-                begin                
-                    next_state = PC;
-                    o_tx_start = 1'b1;
-                end
-            end
-            
-            INDEX_RESET:
-            begin
-                if(index_reset_flag)
-                begin
-                    next_state = REG;
-                end
-                else 
-                begin
-                    next_state = INDEX_RESET;
-                end
-            end
-            
-            REG://manda los regs uno por uno sin usar un for,
-                //Pero como solo tengo el IF voy a enviar las istrucciones para testear el procedimiento 
-            begin
-                data = instruccion;
-                if (index_8_bit < 4) begin
-                    o_tx_start = 1; // Mantener transmisión activa
-                end
-                if (o_done) begin
-                    next_state = IDLE; // Salir de REG cuando termine
-                end
-            end
-            
-            MEM: // aun no lo necestio por que no tengo memoria
-            begin
-                data = i_memoria;
-                o_tx_start = 1'b1;
-                
-                if(tx_done)
-                begin
-                    i = i + 1;
-                    
-                    if(i == 4)
-                    begin
-                        i = 5'b0;
-                        next_state = CNTR;
-                        o_tx_start = 1'b0;
-                    end
-                end
-            end
-            */
-            /*
-            CNTR:
-            begin
-                data = i_ciclos;
-                o_tx_start = 1'b1;
-                
-                if(tx_done)
-                begin
-                    i = i + 1;
-                    
-                    if(i == 4)
-                    begin
-                        i = 5'b0;
-                        next_state = IDLE;
-                        o_done     = 1'b1;
-                    end
-                end
-            end*//*            
-            default:
-            begin
-                next_state = IDLE;
-            end
-        endcase       
-    end
-    
-    always@(posedge i_clk)begin:tx_done_logic        
-        // aca setea el tx_done
-        if(i_tx_done == 1'b1)
-            tx_done <= 1'b1;
-        else
-            tx_done <= 1'b0;
-    end
-    */
     
     assign o_data_to_send = data[(N_BITS_UART*index_8_bit)+:N_BITS_UART];
     assign o_data_addr_ID = data_add_ID;

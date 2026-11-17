@@ -33,7 +33,6 @@ module UART_Top
     // El módulo baudrate_generator usa M como divisor.
     // M = CLK_FREQ / (BAUD_RATE * SB_TICK)
     // Se calcula usando $ceil() y $rtoi() en herramientas como Vivado,
-    // pero en Verilog estándar, usamos la división entera:
     localparam real real_divisor = (1.0 * CLK_FREQ)/ (BAUD_RATE * SB_TICK); 
     localparam M_DIVISOR = $rtoi($ceil(real_divisor));
     
