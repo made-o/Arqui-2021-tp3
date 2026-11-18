@@ -85,7 +85,7 @@ Es un valor bajo por dos decisiones del diseño:
 
 Todo este recorrido es combinacional y ocurre en **un solo ciclo** → desde que la instrucción sale del registro de la memoria de instrucciones (flanco *n*) hasta que el próximo PC se captura en `newPc_reg` (flanco *n+1*). Las celdas son las que muestra el Schematic de Vivado (F4 sobre el path).
 
-<!-- 🪧 captura del Schematic del camino crítico (formato: ![Schematic del camino crítico](img/clock-camino-critico.png)) -->
+![Schematic del camino crítico en Vivado](caminoCritico.jpeg)
 
 ```mermaid
 flowchart LR
