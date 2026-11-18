@@ -117,6 +117,9 @@ La penalidad es de **una burbuja**, en lugar de dos o tres si se resolviera más
 
 ### Memoria de instrucciones direccionada por palabra
 
-El PC no incrementa de a 4 bytes como en RISC-V real: incrementa de a **1**, porque la memoria de instrucciones tiene 32 entradas direccionadas por índice (5 bits), no por byte. 
+El PC no incrementa de a 4 bytes como en RISC-V real: incrementa de a **1**, porque la memoria de instrucciones tiene 32 entradas direccionadas por índice (5 bits), no por byte.
 
 > *Ver `08-mips-vs-riscv.md` para más contexto de por qué el diseño se aparta acá del RISC-V estándar.*
+
+### Instruccion Jal y Jalr
+Para evitar crear nuevos bit tanto para el control como para los **forwarding** se opto por incluir una nueva entrada, el **PC**, en los registros del **dato b** para la **ALU**, y que este tipo de instrucciones, junto con el **LUI**, pasen el dato sin modificación, asi poder reutilizar los mecanismos ya implementados.
