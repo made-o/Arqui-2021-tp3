@@ -72,7 +72,7 @@ module memory #(
       .o_data_send_tx(o_data_send_tx_MEM)
    );
 
-   always @(posedge i_clk) begin: MEM/WB.
+   always @(posedge i_clk) begin: MEM_WB
 
       if(i_reset) begin
          o_readData           <= {N_BITS{1'b0}};

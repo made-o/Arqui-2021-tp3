@@ -139,7 +139,6 @@ module debug_manager #(
         .i_rd(i_rd_WB), 
         .i_WB_regWrite(i_WB_regWrite), 
 
-        .i_halt(1'b0), 
         .i_tx_done(i_tx_done),
         
         .i_exec_mode(o_exec_mode), 

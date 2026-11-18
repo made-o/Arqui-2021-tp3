@@ -116,7 +116,6 @@ module instructionDecode#(
         );
         
     control#(
-        .N_BITS           (32),
         .N_BITS_OP        (7),
         .N_BITS_FUNC_3      (3)
     )   
@@ -125,8 +124,6 @@ module instructionDecode#(
         .i_func3(i_instruccion[14:12]),
         .i_reset(i_reset),
         .i_valid(!i_reset),
-        .i_stall(o_stall),
-        .i_flush(o_flush),
         
         .o_control_WB_memtoReg(w_control_WB_memtoReg),
         .o_control_WB_regWrite(w_control_WB_regWrite),
@@ -138,9 +135,7 @@ module instructionDecode#(
     ); 
     
     pc_jump#(
-        .N_BITS_DW   (32),
-        .N_BITS_W    (16),
-        .N_BITS_REG  (5)
+        .N_BITS_DW   (32)
     ) extension_and_jump_addr(
         .i_sign_extension1  (i_instruccion[31:20]),
         .i_sign_extension2  (i_instruccion[11:7]),

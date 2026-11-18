@@ -42,7 +42,6 @@
         .i_clk(i_clk),           //! Reloj
         .i_reset(i_reset),       //! Reset
         .i_enable(i_enable),    
-        .i_halt(halt_signal),         //! Señal de halt
         .i_stall(i_stall),       //! Señal de stall
         .i_inicializando (i_inicializando),
         .i_pc(halt_signal ? w_pc_jump : w_pc_incremented),
@@ -89,7 +88,6 @@
                     .i_step(i_step),
     
                     .o_data(w_instruction),    //! Instrucción en la dirección actual
-                    .o_data_send_tx(o_data_send_tx),
                     .o_haltSignal(halt_signal) //! Señal HALT si se detecta una instrucción HALT
                   );
   assign o_pc = w_pc_current;
